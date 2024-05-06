@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3333:3333"
+    container_name: ecommerce-api-container
+    volumes:
+      - .:/usr/src/app
+    command: yarn start:dev
+    networks:
+      - ecommerce-network
+    environment:
+      - NODE_ENV=development
+
+  ecommercedb:
+    image: postgres:latest
+    networks:
+      - ecommerce-network
+    container_name: ecommerce-db-container
+    volumes:
+      - ecommerce_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ecommerce-db
+      POSTGRES_PASSWORD: ecommerce-db
+      POSTGRES_DB: ecommerce-db
+    ports:
+      - '5432:5432'
+    restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U ecommerce-db' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    ports:
+      - '6379:6379'
+    networks:
+      - ecommerce-network
+    container_name: ecommerce-redis
+
+networks:
+  ecommerce-network:
+    driver: bridge
+
+volumes:
+  ecommerce_db_data:
