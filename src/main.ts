@@ -12,7 +12,7 @@ async function bootstrap(): Promise<void> {
     .addTag('e-commerce')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-  await app.listen(3333);
+  SwaggerModule.setup('v1/api', app, document);
+  await app.listen(process.env.PORT);
 }
 bootstrap();
