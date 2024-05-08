@@ -26,6 +26,7 @@ model UserToken {
   id        String   @unique @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String
   createdAt DateTime @default(now())
 
   @@map("userToken")
