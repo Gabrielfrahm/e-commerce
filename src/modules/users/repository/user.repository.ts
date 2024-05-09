@@ -76,4 +76,45 @@ export class UserRepository implements UserRepositoryInterface {
       return left(e);
     }
   }
+
+  async createEmployer(entity: User): Promise<Either<Error, User>> {
+    try {
+      const checkEmil = await this.model.findUnique({
+        where: {
+          email: entity.getEmail(),
+        },
+      });
+
+      if (checkEmil) {
+        return left(
+          new RepositoryException(
+            `User Already existing with email: ${entity.getEmail()}`,
+            404,
+          ),
+        );
+      }
+
+      const createUser = await this.model.create({
+        data: {
+          id: entity.getId(),
+          email: entity.getEmail(),
+          name: entity.getName(),
+          type: entity.getType(),
+          password: entity.getPassword(),
+          createdAt: entity.getCreatedAt(),
+          updatedAt: entity.getUpdatedAt(),
+          deletedAt: entity.getDeletedAt(),
+        },
+      });
+
+      return right(
+        User.createFrom({
+          ...createUser,
+          type: Types[createUser.type],
+        }),
+      );
+    } catch (e) {
+      return left(e);
+    }
+  }
 }

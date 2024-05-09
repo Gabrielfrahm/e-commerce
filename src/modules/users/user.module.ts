@@ -4,6 +4,7 @@ import { UserRepository } from '@modules/users/repository/user.repository';
 import { UserController } from './user.controller';
 import { LoggingModule } from '@modules/logger/logger.module';
 import { CreateClienteWithEmailUseCase } from './usecases/create-cliente-with-email.usecase';
+import { CreateEmployerUseCase } from './usecases/create-employer.usecase';
 
 @Module({
   imports: [LoggingModule],
@@ -17,6 +18,7 @@ import { CreateClienteWithEmailUseCase } from './usecases/create-cliente-with-em
       inject: [PrismaService],
     },
     CreateClienteWithEmailUseCase,
+    CreateEmployerUseCase,
   ],
   exports: ['userRepository'],
 })
