@@ -41,7 +41,11 @@ export class EitherExceptionFilter implements ExceptionFilter {
             : exception.message
           : exception,
     };
-
+    // Log the error
+    // this.logger.error(
+    //   `HTTP ${httpStatus} Error: ${error.body.message}`,
+    //   exception.stack,
+    // );
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }

@@ -7,6 +7,9 @@ import { JwtService } from './services/jwt.service';
 import { CryptoService } from './services/crypto.service';
 import { UserModule } from '@modules/users/user.module';
 import { LoggingModule } from '@modules/logger/logger.module';
+import { AuthWithEmail } from './usecases/auth-with-email.usecase';
+import { AuthenticationGuard } from './middlewares/authenticate.guard';
+import { RolesGuard } from './middlewares/role.guard';
 
 @Module({
   imports: [UserModule, LoggingModule],
@@ -27,8 +30,25 @@ import { LoggingModule } from '@modules/logger/logger.module';
       provide: 'cryptoService',
       useFactory: (): CryptoService => new CryptoService(12),
     },
+    {
+      provide: AuthenticationGuard,
+      useFactory: (jwtService: JwtService): AuthenticationGuard =>
+        new AuthenticationGuard(jwtService),
+      inject: ['jwtService'],
+    },
+    {
+      provide: RolesGuard,
+      useClass: RolesGuard,
+    },
     AuthWithEmailAndPassword,
+    AuthWithEmail,
   ],
-  exports: ['userTokenRepository', 'jwtService', 'cryptoService'],
+  exports: [
+    'userTokenRepository',
+    'jwtService',
+    'cryptoService',
+    AuthenticationGuard,
+    RolesGuard,
+  ],
 })
 export class AuthModule {}

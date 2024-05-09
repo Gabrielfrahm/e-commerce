@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateCommandAuthDto {
+export class CreateClientCommandAuthDto {
   @ApiProperty({
     example: 'user@example.com',
     description: 'Email address of the user',
@@ -9,17 +9,9 @@ export class CreateCommandAuthDto {
   @IsString()
   @IsNotEmpty()
   email: string;
-
-  @ApiProperty({
-    example: 'yourpassword',
-    description: 'Password for the account',
-  })
-  @IsString()
-  @IsNotEmpty()
-  password: string;
 }
 
-export class OutputAuthDto {
+export class CreateClientOutputAuthDto {
   @ApiProperty({ example: 'token' })
   @IsString()
   token: string;

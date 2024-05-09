@@ -30,7 +30,6 @@ async function bootstrap(): Promise<void> {
     .setTitle('e-commerce')
     .setDescription('The e-commerce API description')
     .setVersion('1.0')
-    .addTag('e-commerce')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('v1/api', app, document);

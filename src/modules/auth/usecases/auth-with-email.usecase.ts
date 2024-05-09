@@ -1,44 +1,42 @@
 import { BaseUseCase } from '@common/interfaces/usecases.interface';
 import { Either, left, right } from '@common/utils/either';
 import { JwtInterface } from '@modules/auth/interfaces/jwt.interface';
-import { CryptoInterface } from '../interfaces/crypto.interface';
-import { UseCaseException } from '@common/exceptions/usecase.exception';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserRepositoryInterface } from '@modules/users/interfaces/user.repository.interface';
 import { UserTokenRepositoryInterface } from '../interfaces/userToken.reposioty.interface';
-
-export interface Input {
-  email: string;
-  password: string;
-}
-
-export type Output = Either<Error, { token: string }>;
+import {
+  CreateClientCommandAuthDto,
+  CreateClientOutputAuthDto,
+} from '../dtos/auth-client.dto';
+import { UseCaseException } from '@common/exceptions/usecase.exception';
 
 @Injectable()
-export class AuthWithEmailAndPassword implements BaseUseCase<Input, Output> {
+export class AuthWithEmail
+  implements
+    BaseUseCase<
+      CreateClientCommandAuthDto,
+      Either<Error, CreateClientOutputAuthDto>
+    >
+{
   constructor(
     @Inject('jwtService') private readonly jwtService: JwtInterface,
-    @Inject('cryptoService') private readonly cryptoService: CryptoInterface,
     @Inject('userRepository')
     private readonly userRepository: UserRepositoryInterface,
     @Inject('userTokenRepository')
     private readonly userTokenRepository: UserTokenRepositoryInterface,
   ) {}
 
-  async execute(input: Input): Promise<Output> {
+  async execute(
+    input: CreateClientCommandAuthDto,
+  ): Promise<Either<Error, CreateClientOutputAuthDto>> {
     const user = await this.userRepository.findByEmail(input.email);
 
     if (user.isLeft()) {
       return left(user.value);
     }
 
-    const comparePassword = await this.cryptoService.compare(
-      input.password,
-      user.value.getPassword(),
-    );
-
-    if (!comparePassword.value) {
-      return left(new UseCaseException('Invalid credentials', 403));
+    if (user.value.getType() !== 'client') {
+      return left(new UseCaseException('not allowed', 401));
     }
 
     const token = await this.jwtService.generateToken(

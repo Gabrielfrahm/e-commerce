@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '@modules/database/prisma/prisma.service';
 import { UserRepository } from '@modules/users/repository/user.repository';
+import { UserController } from './user.controller';
+import { LoggingModule } from '@modules/logger/logger.module';
+import { CreateClienteWithEmailUseCase } from './usecases/create-cliente-with-email.usecase';
 
 @Module({
-  imports: [],
-  controllers: [],
+  imports: [LoggingModule],
+  controllers: [UserController],
   providers: [
     PrismaService,
     {
@@ -13,6 +16,7 @@ import { UserRepository } from '@modules/users/repository/user.repository';
         new UserRepository(prismaService),
       inject: [PrismaService],
     },
+    CreateClienteWithEmailUseCase,
   ],
   exports: ['userRepository'],
 })

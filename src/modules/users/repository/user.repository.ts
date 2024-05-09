@@ -18,6 +18,7 @@ export class UserRepository implements UserRepositoryInterface {
   constructor(prismaService: PrismaService) {
     this.model = prismaService.user;
   }
+
   async findByEmail(email: string): Promise<Either<Error, User>> {
     try {
       const userModel = await this.model.findUnique({
@@ -34,6 +35,41 @@ export class UserRepository implements UserRepositoryInterface {
         User.createFrom({
           ...userModel,
           type: Types[userModel.type],
+        }),
+      );
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async createClient(email: string): Promise<Either<Error, User>> {
+    try {
+      const checkEmil = await this.model.findUnique({
+        where: {
+          email: email,
+        },
+      });
+
+      if (checkEmil) {
+        return left(
+          new RepositoryException(
+            `User Already existing with email: ${email}`,
+            404,
+          ),
+        );
+      }
+
+      const createUser = await this.model.create({
+        data: {
+          email: email,
+          type: 'client',
+        },
+      });
+
+      return right(
+        User.createFrom({
+          ...createUser,
+          type: Types[createUser.type],
         }),
       );
     } catch (e) {

@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 
 interface UserJwtPayload {
   id: string;
-  email: string;
+  type: string;
 }
 
 @Injectable()
@@ -26,6 +26,7 @@ export class JwtService implements JwtInterface {
   async verifyToken(token: string): Promise<Either<Error, unknown>> {
     try {
       const isValid = verify(token, '123456');
+
       return right(isValid);
     } catch (e) {
       return left(new ServiceException('Error ao verificar token', 500));

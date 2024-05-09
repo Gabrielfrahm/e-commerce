@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { BaseEntity, BaseEntityProps } from 'src/common/utils/base.entity';
 
 export interface UserProps extends BaseEntityProps {
-  name: string;
+  name?: string;
   email: string;
   password?: string;
   type: 'admin' | 'client' | 'employer';
