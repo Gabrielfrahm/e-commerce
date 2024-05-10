@@ -13,8 +13,8 @@ export class UsersProcessor {
     private readonly mailService: MailServiceInterface<SendMailPayload, void>,
   ) {}
 
-  @Process('send.email')
-  async sendEmail({
+  @Process('send.email.employer')
+  async sendEmailEmployer({
     data,
   }: Job<{
     email: string;
@@ -25,11 +25,40 @@ export class UsersProcessor {
       subject: 'Email para definição de senha',
       template: 'password-creation', // nome do template sem a extensão
       context: {
-        email: data.name,
+        name: data.name,
         mensagem: 'Esta é uma mensagem dinâmica.',
       },
     };
 
-    await this.mailService.sendMail(mailOptions);
+    const result = await this.mailService.sendMail(mailOptions);
+    if (result.isLeft()) {
+      throw result.value;
+    }
+
+    return result.value;
+  }
+
+  @Process('send.email.client')
+  async sendEmailClient({
+    data,
+  }: Job<{
+    email: string;
+  }>): Promise<void> {
+    const mailOptions = {
+      to: `${data.email}`,
+      subject: 'Email para definição de senha',
+      template: 'welcome', // nome do template sem a extensão
+      context: {
+        email: data.email,
+        mensagem: 'Esta é uma mensagem dinâmica.',
+      },
+    };
+
+    const result = await this.mailService.sendMail(mailOptions);
+    if (result.isLeft()) {
+      throw result.value;
+    }
+
+    return result.value;
   }
 }

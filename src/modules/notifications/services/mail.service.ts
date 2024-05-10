@@ -8,6 +8,7 @@ import * as hbs from 'nodemailer-express-handlebars';
 import { createTransport } from 'nodemailer';
 import { handlebarsOptions } from '../templates/template-config';
 import { Inject, LoggerService } from '@nestjs/common';
+import { Either, left, right } from '@common/utils/either';
 
 export class NodemailerService
   implements MailServiceInterface<SendMailPayload, void>
@@ -27,15 +28,18 @@ export class NodemailerService
     private readonly loggerService: LoggerService,
   ) {}
 
-  async sendMail(payload: SendMailPayload): Promise<void> {
+  async sendMail(payload: SendMailPayload): Promise<Either<Error, void>> {
     try {
       await this.transporter.sendMail({
         from: process.env.MAIL_FROM,
         ...payload,
       });
       await this.loggerService.log(`sending email to ${payload.to}`);
+
+      return right(null);
     } catch (error) {
       await this.loggerService.error(`Error sending email`, error);
+      return left(error);
     }
   }
 }

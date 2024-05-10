@@ -18,6 +18,7 @@ model User {
   updatedAt DateTime    @default(now())
   deletedAt DateTime?
   UserToken UserToken[]
+  UserCode  UserCode[]
 
   @@map("users")
 }
@@ -30,4 +31,14 @@ model UserToken {
   createdAt DateTime @default(now())
 
   @@map("userToken")
+}
+
+model UserCode {
+  id        String   @unique @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
+  createdAt DateTime @default(now())
+
+  @@map("userCode")
 }

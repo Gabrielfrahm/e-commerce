@@ -6,6 +6,8 @@ import {
 import { Either, left, right } from '@common/utils/either';
 import { UserRepositoryInterface } from '../interfaces/user.repository.interface';
 import { Inject } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 export class CreateClienteWithEmailUseCase
   implements
@@ -14,6 +16,7 @@ export class CreateClienteWithEmailUseCase
   constructor(
     @Inject('userRepository')
     private readonly userRepository: UserRepositoryInterface,
+    @InjectQueue('usersQueue') private usersQueue: Queue,
   ) {}
 
   async execute(
@@ -24,6 +27,10 @@ export class CreateClienteWithEmailUseCase
     if (client.isLeft()) {
       return left(client.value);
     }
+
+    await this.usersQueue.add('send.email.client', {
+      email: client.value.getEmail(),
+    });
 
     return right({
       id: client.value.getId(),

@@ -9,6 +9,7 @@ import { Inject } from '@nestjs/common';
 import { User } from '../entities/user.entity';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
+import { randomInt } from 'crypto';
 
 export class CreateEmployerUseCase
   implements
@@ -35,7 +36,9 @@ export class CreateEmployerUseCase
       return left(employer.value);
     }
 
-    await this.usersQueue.add('send.email', {
+    const code = randomInt(100000, 999999);
+    console.log(code);
+    await this.usersQueue.add('send.email.employer', {
       email: employer.value.getEmail(),
       name: employer.value.getName(),
     });
