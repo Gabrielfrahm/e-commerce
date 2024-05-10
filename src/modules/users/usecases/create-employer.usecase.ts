@@ -35,7 +35,7 @@ export class CreateEmployerUseCase
       return left(employer.value);
     }
 
-    await this.usersQueue.add('user.email.send', 'ok');
+    await this.usersQueue.add('user.email.send', employer.value.getEmail());
     return right({
       id: employer.value.getId(),
       email: employer.value.getEmail(),
