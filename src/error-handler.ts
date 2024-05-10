@@ -10,7 +10,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 export class EitherExceptionFilter implements ExceptionFilter {
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
-  catch(exception: any, host: ArgumentsHost): void {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
 
     const { httpAdapter } = this.httpAdapterHost;

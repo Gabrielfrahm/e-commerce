@@ -2,6 +2,7 @@ import { LoggingModule } from '@modules/logger/logger.module';
 import { Module } from '@nestjs/common';
 import { UsersProcessor } from './queues/user.processor';
 import { NodemailerService } from './services/mail.service';
+import { WinstonLoggerService } from '@modules/logger/logger.service';
 
 @Module({
   imports: [LoggingModule],
@@ -9,7 +10,10 @@ import { NodemailerService } from './services/mail.service';
   providers: [
     {
       provide: 'mailService',
-      useFactory: (): NodemailerService => new NodemailerService(),
+      useFactory: (
+        winstonLoggerService: WinstonLoggerService,
+      ): NodemailerService => new NodemailerService(winstonLoggerService),
+      inject: ['WinstonLoggerService'],
     },
     {
       provide: UsersProcessor,

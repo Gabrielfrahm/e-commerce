@@ -13,14 +13,23 @@ export class UsersProcessor {
     private readonly mailService: MailServiceInterface<SendMailPayload, void>,
   ) {}
 
-  @Process('user.email.send')
-  async sendEmail({ data }: Job<string>): Promise<void> {
-    console.log(data);
-    await this.mailService.sendMail({
-      to: data,
+  @Process('send.email')
+  async sendEmail({
+    data,
+  }: Job<{
+    email: string;
+    name: string;
+  }>): Promise<void> {
+    const mailOptions = {
+      to: `${data.email}`,
       subject: 'Email para definição de senha',
-      text: 'Definição de senha',
-      html: `test`,
-    });
+      template: 'password-creation', // nome do template sem a extensão
+      context: {
+        email: data.name,
+        mensagem: 'Esta é uma mensagem dinâmica.',
+      },
+    };
+
+    await this.mailService.sendMail(mailOptions);
   }
 }

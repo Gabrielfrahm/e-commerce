@@ -3,7 +3,11 @@ import {
   SendMailPayload,
 } from '../interfaces/mail-service.interface';
 
+import * as hbs from 'nodemailer-express-handlebars';
+
 import { createTransport } from 'nodemailer';
+import { handlebarsOptions } from '../templates/template-config';
+import { Inject, LoggerService } from '@nestjs/common';
 
 export class NodemailerService
   implements MailServiceInterface<SendMailPayload, void>
@@ -16,17 +20,22 @@ export class NodemailerService
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS,
     },
-  });
+  }).use('compile', hbs(handlebarsOptions));
+
+  constructor(
+    @Inject('WinstonLoggerService')
+    private readonly loggerService: LoggerService,
+  ) {}
 
   async sendMail(payload: SendMailPayload): Promise<void> {
-    console.log('chegou aqui', process.env.MAIL_FROM);
     try {
       await this.transporter.sendMail({
         from: process.env.MAIL_FROM,
         ...payload,
       });
+      await this.loggerService.log(`sending email to ${payload.to}`);
     } catch (error) {
-      console.error('Error sending email', error);
+      await this.loggerService.error(`Error sending email`, error);
     }
   }
 }
