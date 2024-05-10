@@ -6,8 +6,15 @@ import { LoggingModule } from '@modules/logger/logger.module';
 import { CreateClienteWithEmailUseCase } from './usecases/create-cliente-with-email.usecase';
 import { CreateEmployerUseCase } from './usecases/create-employer.usecase';
 
+import { BullModule } from '@nestjs/bull';
+
 @Module({
-  imports: [LoggingModule],
+  imports: [
+    LoggingModule,
+    BullModule.registerQueue({
+      name: 'usersQueue',
+    }),
+  ],
   controllers: [UserController],
   providers: [
     PrismaService,
