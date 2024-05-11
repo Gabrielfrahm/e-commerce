@@ -7,6 +7,7 @@ import { CreateClienteWithEmailUseCase } from './usecases/create-cliente-with-em
 import { CreateEmployerUseCase } from './usecases/create-employer.usecase';
 
 import { BullModule } from '@nestjs/bull';
+import { UserCodeDAO } from './repository/user-code.dao';
 
 @Module({
   imports: [
@@ -22,6 +23,12 @@ import { BullModule } from '@nestjs/bull';
       provide: 'userRepository',
       useFactory: (prismaService: PrismaService): UserRepository =>
         new UserRepository(prismaService),
+      inject: [PrismaService],
+    },
+    {
+      provide: 'userCodeDAO',
+      useFactory: (prismaService: PrismaService): UserCodeDAO =>
+        new UserCodeDAO(prismaService),
       inject: [PrismaService],
     },
     CreateClienteWithEmailUseCase,

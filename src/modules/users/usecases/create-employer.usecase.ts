@@ -10,6 +10,7 @@ import { User } from '../entities/user.entity';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { randomInt } from 'crypto';
+import { UserCodeDAOInterface } from '../interfaces/user-token.dao.interface';
 
 export class CreateEmployerUseCase
   implements
@@ -19,6 +20,8 @@ export class CreateEmployerUseCase
     @Inject('userRepository')
     private readonly userRepository: UserRepositoryInterface,
     @InjectQueue('usersQueue') private usersQueue: Queue,
+    @Inject('userCodeDAO')
+    private readonly userCodeDao: UserCodeDAOInterface,
   ) {}
 
   async execute(
@@ -36,11 +39,20 @@ export class CreateEmployerUseCase
       return left(employer.value);
     }
 
-    const code = randomInt(100000, 999999);
-    console.log(code);
+    const code = await this.userCodeDao.createCode({
+      code: randomInt(100000, 999999),
+      userId: employer.value.getId(),
+    });
+
+    if (code.isLeft()) {
+      return left(code.value);
+    }
+
     await this.usersQueue.add('send.email.employer', {
       email: employer.value.getEmail(),
       name: employer.value.getName(),
+      code: code.value.code,
+      link: `${process.env.BASE_URL}/users/password`,
     });
 
     return right({

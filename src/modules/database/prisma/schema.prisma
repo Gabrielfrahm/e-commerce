@@ -37,7 +37,7 @@ model UserCode {
   id        String   @unique @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  code      String
+  code      Int      @unique
   createdAt DateTime @default(now())
 
   @@map("userCode")

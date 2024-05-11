@@ -19,14 +19,18 @@ export class UsersProcessor {
   }: Job<{
     email: string;
     name: string;
+    code: number;
+    link: string;
   }>): Promise<void> {
     const mailOptions = {
       to: `${data.email}`,
       subject: 'Email para definição de senha',
-      template: 'password-creation', // nome do template sem a extensão
+      template: 'password-creation',
       context: {
         name: data.name,
-        mensagem: 'Esta é uma mensagem dinâmica.',
+        mensagem: 'Use esse código para definir sua senha.',
+        code: data.code,
+        link: data.link,
       },
     };
 
