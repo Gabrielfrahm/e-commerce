@@ -18,6 +18,7 @@ import {
 import { AuthenticationGuard } from './middlewares/authenticate.guard';
 import { Roles } from './decorators/role.decorator';
 import { RolesGuard } from './middlewares/role.guard';
+import { UserRole } from './middlewares/roles.enum';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -100,7 +101,7 @@ export class AuthController {
   }
 
   @Get()
-  @Roles(['admin'])
+  @Roles([UserRole.Admin, UserRole.Employer])
   @UseGuards(AuthenticationGuard, RolesGuard)
   async test(): Promise<string> {
     return 'ok';

@@ -17,6 +17,10 @@ export class AuthenticationGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization?.split(' ')[1];
 
+    if (!token) {
+      throw new ServiceException('Authorization token not provided', 401);
+    }
+
     const decoded = await this.jwtService.verifyToken(token);
 
     if (decoded.isLeft()) {
