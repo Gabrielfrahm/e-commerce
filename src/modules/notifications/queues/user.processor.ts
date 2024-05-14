@@ -65,4 +65,33 @@ export class UsersProcessor {
 
     return result.value;
   }
+
+  @Process('send.email.recovery.password')
+  async sendEmailRecoveryPassword({
+    data,
+  }: Job<{
+    email: string;
+    name: string;
+    code: number;
+    link: string;
+  }>): Promise<void> {
+    const mailOptions = {
+      to: `${data.email}`,
+      subject: 'Email para recuperação de senha',
+      template: 'password-creation',
+      context: {
+        name: data.name,
+        mensagem: 'Use esse código para definir sua senha.',
+        code: data.code,
+        link: data.link,
+      },
+    };
+
+    const result = await this.mailService.sendMail(mailOptions);
+    if (result.isLeft()) {
+      throw result.value;
+    }
+
+    return result.value;
+  }
 }

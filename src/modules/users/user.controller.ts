@@ -12,6 +12,8 @@ import {
 } from './dtos/create-employer.dto';
 import { CreateOrRecoveryPasswordUseCase } from './usecases/create-or-recovery-password.usecase';
 import { CreateCommand } from './dtos/create-or-recovery-password.dto';
+import { RecoveryPasswordDto } from './dtos/recovety-password.dto';
+import { RecoveryPasswordUseCase } from './usecases/recovery-password.usecase';
 
 @ApiTags('user')
 @Controller('user')
@@ -22,6 +24,7 @@ export class UserController {
     private readonly createClienteWithEmailUseCase: CreateClienteWithEmailUseCase,
     private readonly createEmployerUseCase: CreateEmployerUseCase,
     private readonly createOrRecoveryPassword: CreateOrRecoveryPasswordUseCase,
+    private readonly recoveryPasswordUseCase: RecoveryPasswordUseCase,
   ) {}
 
   @Post('/client')
@@ -107,6 +110,33 @@ export class UserController {
     }
 
     this.loggerService.log(`Creation or Recovery  password successfully `);
+    return response.value;
+  }
+
+  @Post('/password-recovery')
+  @ApiOperation({ summary: 'Create or Recovery password.' })
+  @ApiBody({
+    type: RecoveryPasswordDto,
+    description: 'command for create or recovery password.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Create or Recovery password successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'User or Code not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async recoveryPassword(@Body() data: RecoveryPasswordDto): Promise<string> {
+    const response = await this.recoveryPasswordUseCase.execute(data);
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Fail to recovery password`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`send email for recovery password ${data.email}`);
     return response.value;
   }
 }

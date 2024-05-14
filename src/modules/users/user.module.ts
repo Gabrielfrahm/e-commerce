@@ -10,6 +10,7 @@ import { BullModule } from '@nestjs/bull';
 import { UserCodeDAO } from './repository/user-code.dao';
 import { CreateOrRecoveryPasswordUseCase } from './usecases/create-or-recovery-password.usecase';
 import { AuthModule } from '@modules/auth/auth.module';
+import { RecoveryPasswordUseCase } from './usecases/recovery-password.usecase';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AuthModule } from '@modules/auth/auth.module';
     CreateClienteWithEmailUseCase,
     CreateEmployerUseCase,
     CreateOrRecoveryPasswordUseCase,
+    RecoveryPasswordUseCase,
   ],
   exports: ['userRepository'],
 })

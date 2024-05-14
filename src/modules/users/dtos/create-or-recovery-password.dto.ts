@@ -61,7 +61,7 @@ export function PasswordValidation(
 export class CreateCommand {
   @IsString()
   @ApiProperty({
-    example: '000000',
+    example: Number('000000'),
     description: 'code for create or recovery password',
   })
   code: string;

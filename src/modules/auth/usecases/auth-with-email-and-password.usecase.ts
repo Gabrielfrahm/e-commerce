@@ -37,7 +37,7 @@ export class AuthWithEmailAndPassword implements BaseUseCase<Input, Output> {
       user.value.getPassword(),
     );
 
-    if (!comparePassword.value) {
+    if (comparePassword.isLeft()) {
       return left(new UseCaseException('Invalid credentials', 403));
     }
 
