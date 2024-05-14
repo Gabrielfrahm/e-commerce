@@ -6,6 +6,7 @@ import {
 import { UserCodeDAOInterface } from '../interfaces/user-token.dao.interface';
 import { PrismaService } from '@modules/database/prisma/prisma.service';
 import { randomInt } from 'crypto';
+import { RepositoryException } from '@common/exceptions/repository.exception';
 
 export class UserCodeDAO implements UserCodeDAOInterface {
   private model: PrismaService['userCode'];
@@ -48,6 +49,25 @@ export class UserCodeDAO implements UserCodeDAOInterface {
       });
 
       return right(createCode);
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async findCode(code: number): Promise<Either<Error, OutputUserCodeDto>> {
+    try {
+      const codeModel = await this.model.findUnique({
+        where: {
+          code,
+        },
+      });
+
+      if (!codeModel) {
+        return left(
+          new RepositoryException(`Code not found with ${code}`, 404),
+        );
+      }
+      return right(codeModel);
     } catch (e) {
       return left(e);
     }

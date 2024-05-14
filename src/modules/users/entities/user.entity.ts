@@ -9,9 +9,9 @@ export interface UserProps extends BaseEntityProps {
 }
 
 export class User extends BaseEntity {
-  private readonly name: UserProps['name'];
-  private readonly email: UserProps['email'];
-  private readonly password: UserProps['password'];
+  private name: UserProps['name'];
+  private email: UserProps['email'];
+  private password: UserProps['password'];
   private readonly type: UserProps['type'];
 
   constructor(data: UserProps) {
@@ -71,5 +71,10 @@ export class User extends BaseEntity {
 
   getType(): string {
     return this.type;
+  }
+
+  setPassword(password: string): void {
+    this.password = password;
+    this.updatedAt = new Date();
   }
 }

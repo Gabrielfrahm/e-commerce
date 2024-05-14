@@ -8,8 +8,8 @@ export interface BaseEntityProps {
 export abstract class BaseEntity {
   protected readonly id: BaseEntityProps['id'];
   protected readonly createdAt: BaseEntityProps['createdAt'];
-  protected readonly updatedAt: BaseEntityProps['updatedAt'];
-  protected readonly deletedAt: BaseEntityProps['deletedAt'];
+  protected updatedAt: BaseEntityProps['updatedAt'];
+  protected deletedAt: BaseEntityProps['deletedAt'];
 
   constructor(data: BaseEntityProps) {
     Object.assign(this, data);

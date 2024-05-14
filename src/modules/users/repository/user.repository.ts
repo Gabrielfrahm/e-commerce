@@ -117,4 +117,58 @@ export class UserRepository implements UserRepositoryInterface {
       return left(e);
     }
   }
+
+  async findById(id: string): Promise<Either<Error, User>> {
+    try {
+      const user = await this.model.findUnique({
+        where: {
+          id: id,
+        },
+      });
+
+      if (!user) {
+        return left(new RepositoryException(`User not found if id ${id}`, 404));
+      }
+      return right(User.createFrom({ ...user, type: Types[user.type] }));
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async updatedUser(entity: User): Promise<Either<Error, User>> {
+    try {
+      const user = await this.model.findUnique({
+        where: {
+          id: entity.getId(),
+        },
+      });
+
+      if (!user) {
+        return left(
+          new RepositoryException(
+            `User not found if id ${entity.getId()}`,
+            404,
+          ),
+        );
+      }
+
+      await this.model.update({
+        where: {
+          id: entity.getId(),
+        },
+        data: {
+          email: entity.getEmail(),
+          name: entity.getName(),
+          type: entity.getType(),
+          password: entity.getPassword(),
+          updatedAt: entity.getUpdatedAt(),
+          deletedAt: entity.getDeletedAt(),
+        },
+      });
+
+      return right(entity);
+    } catch (e) {
+      return left(e);
+    }
+  }
 }

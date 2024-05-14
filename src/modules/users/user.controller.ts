@@ -10,6 +10,8 @@ import {
   CreateEmployerDto,
   CreateOutputEmployerDto,
 } from './dtos/create-employer.dto';
+import { CreateOrRecoveryPasswordUseCase } from './usecases/create-or-recovery-password.usecase';
+import { CreateCommand } from './dtos/create-or-recovery-password.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -19,6 +21,7 @@ export class UserController {
     private readonly loggerService: LoggerService,
     private readonly createClienteWithEmailUseCase: CreateClienteWithEmailUseCase,
     private readonly createEmployerUseCase: CreateEmployerUseCase,
+    private readonly createOrRecoveryPassword: CreateOrRecoveryPasswordUseCase,
   ) {}
 
   @Post('/client')
@@ -75,6 +78,35 @@ export class UserController {
     }
 
     this.loggerService.log(`Creation successfully Employer: ${data.email}`);
+    return response.value;
+  }
+
+  @Post('/password')
+  @ApiOperation({ summary: 'Create or Recovery password.' })
+  @ApiBody({
+    type: CreateCommand,
+    description: 'command for create or recovery password.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Create or Recovery password successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'User or Code not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async createOrRecoveryPasswordRoute(
+    @Body() data: CreateCommand,
+  ): Promise<string> {
+    const response = await this.createOrRecoveryPassword.execute(data);
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Fail to create or reset password`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`Creation or Recovery  password successfully `);
     return response.value;
   }
 }
