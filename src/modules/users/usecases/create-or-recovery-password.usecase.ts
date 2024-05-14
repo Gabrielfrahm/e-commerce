@@ -46,6 +46,12 @@ export class CreateOrRecoveryPasswordUseCase
       return left(updatedUser.value);
     }
 
+    const deleteCode = await this.userCodeDao.deleteCode(code.value.code);
+
+    if (deleteCode.isLeft()) {
+      return left(deleteCode.value);
+    }
+
     return right('ok');
   }
 }

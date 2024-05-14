@@ -28,7 +28,7 @@ export class UserCodeDAO implements UserCodeDAOInterface {
       }
 
       let unique = false;
-      let code;
+      let code: number;
 
       while (!unique) {
         code = randomInt(100000, 999999);
@@ -68,6 +68,32 @@ export class UserCodeDAO implements UserCodeDAOInterface {
         );
       }
       return right(codeModel);
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async deleteCode(code: number): Promise<Either<Error, void>> {
+    try {
+      const codeModel = await this.model.findUnique({
+        where: {
+          code,
+        },
+      });
+
+      if (!codeModel) {
+        return left(
+          new RepositoryException(`Code not found with ${code}`, 404),
+        );
+      }
+
+      await this.model.delete({
+        where: {
+          code: code,
+        },
+      });
+
+      return right(null);
     } catch (e) {
       return left(e);
     }

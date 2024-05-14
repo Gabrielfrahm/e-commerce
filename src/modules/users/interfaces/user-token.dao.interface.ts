@@ -9,4 +9,5 @@ export interface UserCodeDAOInterface {
     code: CreateUserCodeDto,
   ): Promise<Either<Error, OutputUserCodeDto>>;
   findCode(code: number): Promise<Either<Error, OutputUserCodeDto>>;
+  deleteCode(code: number): Promise<Either<Error, void>>;
 }
