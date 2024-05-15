@@ -48,6 +48,8 @@ export class OutputCategoryDto {
   })
   parentCategoryId?: string;
 
+  parentCategory?: OutputCategoryDto;
+
   @IsDate()
   createdAt: Date;
 

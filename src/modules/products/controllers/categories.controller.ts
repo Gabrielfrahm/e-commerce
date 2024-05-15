@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   Inject,
   LoggerService,
   Param,
@@ -20,12 +22,18 @@ import { RolesGuard } from '@modules/auth/middlewares/role.guard';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CommandUpdateCategoryDto } from '../dtos/category/update-category.dto';
 import { UpdateCategoryUseCase } from '../usecases/category/update-category.usecase';
+import { DeleteCategoryDto } from '../dtos/category/delete-category.dto';
+import { DeleteCategoryUseCase } from '../usecases/category/delete-category.usecase';
+import { FindOneCategoryUseCase } from '../usecases/category/find-one-category.usecase';
+import { FindOneCategoryDto } from '../dtos/category/find-one-category.dto';
 
 @Controller('categories')
 export class CategoryController {
   constructor(
     private readonly createCategoryUseCase: CreateCategoryUseCase,
     private readonly updateCategoryUseCase: UpdateCategoryUseCase,
+    private readonly deleteCategoryUseCase: DeleteCategoryUseCase,
+    private readonly findOneCategoryUseCase: FindOneCategoryUseCase,
 
     @Inject('WinstonLoggerService')
     private readonly loggerService: LoggerService,
@@ -100,6 +108,70 @@ export class CategoryController {
     await this.loggerService.log(
       `successfully to update category with name ${data.name} `,
     );
+    return response.value;
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'delete Category for products.' })
+  @ApiBody({
+    type: DeleteCategoryDto,
+    description: 'command for delete Category.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'delete Category successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'Category not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  async delete(@Param() id: DeleteCategoryDto): Promise<void> {
+    const response = await this.deleteCategoryUseCase.execute(id);
+
+    if (response.isLeft()) {
+      await this.loggerService.error(
+        `fail to delete category with id ${id.id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    await this.loggerService.log(
+      `successfully to delete category with id ${id.id} `,
+    );
+
+    return response.value;
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'delete Category for products.' })
+  @ApiBody({
+    type: FindOneCategoryDto,
+    description: 'command for delete Category.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'find Category successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'Category not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  async get(@Param() id: FindOneCategoryDto): Promise<OutputCategoryDto> {
+    const response = await this.findOneCategoryUseCase.execute(id);
+
+    if (response.isLeft()) {
+      await this.loggerService.error(
+        `fail to find category with id ${id.id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    await this.loggerService.log(
+      `successfully to find category with id ${id.id} `,
+    );
+
     return response.value;
   }
 }

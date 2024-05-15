@@ -6,6 +6,8 @@ import { PrismaService } from '@modules/database/prisma/prisma.service';
 import { CategoryRepository } from './repositories/category.repository';
 import { CreateCategoryUseCase } from './usecases/category/create-category.usecase';
 import { UpdateCategoryUseCase } from './usecases/category/update-category.usecase';
+import { DeleteCategoryUseCase } from './usecases/category/delete-category.usecase';
+import { FindOneCategoryUseCase } from './usecases/category/find-one-category.usecase';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -20,6 +22,8 @@ import { UpdateCategoryUseCase } from './usecases/category/update-category.useca
     },
     CreateCategoryUseCase,
     UpdateCategoryUseCase,
+    DeleteCategoryUseCase,
+    FindOneCategoryUseCase,
   ],
   exports: ['categoryRepository'],
 })

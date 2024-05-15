@@ -30,6 +30,7 @@ export class CategoryRepository implements CategoryRepositoryInterface {
 
       await this.model.create({
         data: {
+          id: entity.getId(),
           name: entity.getName(),
           parentCategoryId: entity.getParentCategoryId(),
           createdAt: entity.getCreatedAt(),
@@ -60,14 +61,34 @@ export class CategoryRepository implements CategoryRepositoryInterface {
         return left(new RepositoryException(`Category not found ${id}`, 404));
       }
 
-      return right(Category.createFrom({ ...check, updatedAt: new Date() }));
+      return right(Category.createFrom(check));
     } catch (e) {
       return left(e);
     }
   }
 
-  delete(id: string): Promise<Either<Error, void>> {
-    throw new Error('Method not implemented.');
+  async delete(id: string): Promise<Either<Error, void>> {
+    try {
+      const check = await this.model.findUnique({
+        where: {
+          id: id,
+        },
+      });
+
+      if (!check) {
+        return left(new RepositoryException(`category not found: ${id}`, 404));
+      }
+
+      await this.model.delete({
+        where: {
+          id: id,
+        },
+      });
+
+      return right(null);
+    } catch (e) {
+      return left(e);
+    }
   }
 
   async update(entity: Category): Promise<Either<Error, Category>> {
