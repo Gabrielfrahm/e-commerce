@@ -4,6 +4,8 @@ import { Category } from '../entities/categories.entity';
 import { CategoryRepositoryInterface } from '../interfaces/category.repository';
 import { PrismaService } from '@modules/database/prisma/prisma.service';
 import { RepositoryException } from '@common/exceptions/repository.exception';
+import { SearchCategoriesDto } from '../dtos/category/search-categories.dto';
+import { Search } from '@common/interfaces/search.interface';
 
 export class CategoryRepository implements CategoryRepositoryInterface {
   private model: PrismaService['category'];
@@ -125,7 +127,76 @@ export class CategoryRepository implements CategoryRepositoryInterface {
     }
   }
 
-  list(): Promise<Either<Error, Category[]>> {
-    throw new Error('Method not implemented.');
+  async list({
+    page = 1,
+    perPage = 10,
+    name,
+    parentName,
+    sort,
+    sortDir,
+  }: SearchCategoriesDto): Promise<Either<Error, Search<Category>>> {
+    const skip = (page - 1) * perPage;
+    const take = perPage;
+    console.log(skip);
+    try {
+      const categories = await this.model.findMany({
+        where: {
+          deletedAt: null,
+          ...(name && {
+            name: {
+              mode: 'insensitive',
+              contains: name,
+            },
+          }),
+          ...(parentName && {
+            category: {
+              name: {
+                mode: 'insensitive',
+                contains: parentName,
+              },
+            },
+          }),
+        },
+        orderBy: {
+          [sort ?? 'createdAt']: sortDir ?? 'desc',
+        },
+        skip: skip,
+        take: take,
+      });
+
+      const count = await this.model.count({
+        where: {
+          deletedAt: null,
+          ...(name && {
+            name: {
+              mode: 'insensitive',
+              contains: name,
+            },
+          }),
+          ...(parentName && {
+            category: {
+              name: {
+                mode: 'insensitive',
+                contains: parentName,
+              },
+            },
+          }),
+        },
+      });
+
+      const lastPage = Math.ceil(count / take);
+
+      return right({
+        data: categories.map((category) => Category.createFrom(category)),
+        meta: {
+          page: page,
+          perPage: take,
+          total: count,
+          lastPage: lastPage,
+        },
+      });
+    } catch (e) {
+      return left(e);
+    }
   }
 }

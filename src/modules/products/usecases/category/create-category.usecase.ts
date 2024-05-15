@@ -46,13 +46,37 @@ export class CreateCategoryUseCase
       return left(category.value);
     }
 
-    return right({
-      id: category.value.getId(),
-      name: category.value.getName(),
-      parentCategoryId: category.value.getParentCategoryId(),
-      createdAt: category.value.getCreatedAt(),
-      updatedAt: category.value.getUpdatedAt(),
-      deletedAt: category.value.getDeletedAt(),
-    });
+    const outputCategory = await this.buildCategoryHierarchy(category.value);
+
+    return right(outputCategory);
+  }
+
+  private async buildCategoryHierarchy(
+    category: Category,
+  ): Promise<OutputCategoryDto> {
+    const parentCategoryId = category.getParentCategoryId();
+    let parentCategoryDto = null;
+
+    if (parentCategoryId) {
+      const parentCategoryOrError =
+        await this.categoryRepository.findById(parentCategoryId);
+
+      if (parentCategoryOrError.isLeft()) {
+        throw new Error('Parent category not found');
+      }
+
+      const parentCategory = parentCategoryOrError.value;
+      parentCategoryDto = await this.buildCategoryHierarchy(parentCategory);
+    }
+
+    return {
+      id: category.getId(),
+      name: category.getName(),
+      parentCategoryId: category.getParentCategoryId(),
+      parentCategory: parentCategoryDto,
+      createdAt: category.getCreatedAt(),
+      updatedAt: category.getUpdatedAt(),
+      deletedAt: category.getDeletedAt(),
+    };
   }
 }

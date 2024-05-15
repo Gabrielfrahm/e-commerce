@@ -8,6 +8,7 @@ import { CreateCategoryUseCase } from './usecases/category/create-category.useca
 import { UpdateCategoryUseCase } from './usecases/category/update-category.usecase';
 import { DeleteCategoryUseCase } from './usecases/category/delete-category.usecase';
 import { FindOneCategoryUseCase } from './usecases/category/find-one-category.usecase';
+import { SearchCategoriesUseCase } from './usecases/category/search-categories.usecase';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -24,6 +25,7 @@ import { FindOneCategoryUseCase } from './usecases/category/find-one-category.us
     UpdateCategoryUseCase,
     DeleteCategoryUseCase,
     FindOneCategoryUseCase,
+    SearchCategoriesUseCase,
   ],
   exports: ['categoryRepository'],
 })

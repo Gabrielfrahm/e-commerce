@@ -97,7 +97,7 @@ model ProductVariantAttributes {
 model Category {
   id               String            @unique @default(uuid())
   name             String            @unique
-  parentCategoryId String?           @unique
+  parentCategoryId String?
   category         Category?         @relation("ParentCategoryId", fields: [parentCategoryId], references: [id])
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @default(now())

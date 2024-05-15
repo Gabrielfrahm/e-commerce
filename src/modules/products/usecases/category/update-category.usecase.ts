@@ -2,6 +2,7 @@ import { BaseUseCase } from '@common/interfaces/usecases.interface';
 import { Either, left, right } from '@common/utils/either';
 import { OutputCategoryDto } from '@modules/products/dtos/category/category.dto';
 import { CommandUpdateCategoryDto } from '@modules/products/dtos/category/update-category.dto';
+import { Category } from '@modules/products/entities/categories.entity';
 import { CategoryRepositoryInterface } from '@modules/products/interfaces/category.repository';
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -40,13 +41,39 @@ export class UpdateCategoryUseCase
       return left(updatedCategory.value);
     }
 
-    return right({
-      id: updatedCategory.value.getId(),
-      name: updatedCategory.value.getName(),
-      parentCategoryId: updatedCategory.value.getParentCategoryId(),
-      createdAt: updatedCategory.value.getCreatedAt(),
-      updatedAt: updatedCategory.value.getUpdatedAt(),
-      deletedAt: updatedCategory.value.getDeletedAt(),
-    });
+    const outputCategory = await this.buildCategoryHierarchy(
+      updatedCategory.value,
+    );
+
+    return right(outputCategory);
+  }
+
+  private async buildCategoryHierarchy(
+    category: Category,
+  ): Promise<OutputCategoryDto> {
+    const parentCategoryId = category.getParentCategoryId();
+    let parentCategoryDto = null;
+
+    if (parentCategoryId) {
+      const parentCategoryOrError =
+        await this.categoryRepository.findById(parentCategoryId);
+
+      if (parentCategoryOrError.isLeft()) {
+        throw new Error('Parent category not found');
+      }
+
+      const parentCategory = parentCategoryOrError.value;
+      parentCategoryDto = await this.buildCategoryHierarchy(parentCategory);
+    }
+
+    return {
+      id: category.getId(),
+      name: category.getName(),
+      parentCategoryId: category.getParentCategoryId(),
+      parentCategory: parentCategoryDto,
+      createdAt: category.getCreatedAt(),
+      updatedAt: category.getUpdatedAt(),
+      deletedAt: category.getDeletedAt(),
+    };
   }
 }

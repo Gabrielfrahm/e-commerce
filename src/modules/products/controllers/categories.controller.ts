@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CreateCategoryUseCase } from '../usecases/category/create-category.usecase';
@@ -26,6 +27,11 @@ import { DeleteCategoryDto } from '../dtos/category/delete-category.dto';
 import { DeleteCategoryUseCase } from '../usecases/category/delete-category.usecase';
 import { FindOneCategoryUseCase } from '../usecases/category/find-one-category.usecase';
 import { FindOneCategoryDto } from '../dtos/category/find-one-category.dto';
+import { SearchCategoriesUseCase } from '../usecases/category/search-categories.usecase';
+import {
+  OutputSearchCategoriesDto,
+  SearchCategoriesDto,
+} from '../dtos/category/search-categories.dto';
 
 @Controller('categories')
 export class CategoryController {
@@ -34,6 +40,7 @@ export class CategoryController {
     private readonly updateCategoryUseCase: UpdateCategoryUseCase,
     private readonly deleteCategoryUseCase: DeleteCategoryUseCase,
     private readonly findOneCategoryUseCase: FindOneCategoryUseCase,
+    private readonly searchCategoriesUseCase: SearchCategoriesUseCase,
 
     @Inject('WinstonLoggerService')
     private readonly loggerService: LoggerService,
@@ -170,6 +177,27 @@ export class CategoryController {
 
     await this.loggerService.log(
       `successfully to find category with id ${id.id} `,
+    );
+
+    return response.value;
+  }
+
+  @Get()
+  async search(
+    @Query() data: SearchCategoriesDto,
+  ): Promise<OutputSearchCategoriesDto> {
+    const response = await this.searchCategoriesUseCase.execute(data);
+
+    if (response.isLeft()) {
+      await this.loggerService.error(
+        `fail to search category with params  ${JSON.stringify(data)}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    await this.loggerService.log(
+      `successfully to search category with params ${JSON.stringify(data)} `,
     );
 
     return response.value;
