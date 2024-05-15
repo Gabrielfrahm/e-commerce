@@ -5,6 +5,7 @@ import { CategoryController } from './controllers/categories.controller';
 import { PrismaService } from '@modules/database/prisma/prisma.service';
 import { CategoryRepository } from './repositories/category.repository';
 import { CreateCategoryUseCase } from './usecases/category/create-category.usecase';
+import { UpdateCategoryUseCase } from './usecases/category/update-category.usecase';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -18,6 +19,7 @@ import { CreateCategoryUseCase } from './usecases/category/create-category.useca
       inject: [PrismaService],
     },
     CreateCategoryUseCase,
+    UpdateCategoryUseCase,
   ],
   exports: ['categoryRepository'],
 })

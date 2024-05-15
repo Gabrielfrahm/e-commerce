@@ -69,9 +69,41 @@ export class CategoryRepository implements CategoryRepositoryInterface {
   delete(id: string): Promise<Either<Error, void>> {
     throw new Error('Method not implemented.');
   }
-  update(entity: Category): Promise<Either<Error, Category>> {
-    throw new Error('Method not implemented.');
+
+  async update(entity: Category): Promise<Either<Error, Category>> {
+    try {
+      const check = await this.model.findUnique({
+        where: {
+          name: entity.getName(),
+        },
+      });
+
+      if (check && check.id !== entity.getId()) {
+        return left(
+          new RepositoryException(
+            `category name already existi: ${entity.getName()}`,
+            409,
+          ),
+        );
+      }
+
+      const updateCategory = await this.model.update({
+        where: {
+          id: entity.getId(),
+        },
+        data: {
+          name: entity.getName(),
+          parentCategoryId: entity.getParentCategoryId(),
+          updatedAt: entity.getUpdatedAt(),
+        },
+      });
+
+      return right(Category.createFrom(updateCategory));
+    } catch (e) {
+      return left(e);
+    }
   }
+
   list(): Promise<Either<Error, Category[]>> {
     throw new Error('Method not implemented.');
   }

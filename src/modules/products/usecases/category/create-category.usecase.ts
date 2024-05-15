@@ -3,7 +3,7 @@ import { Either, left, right } from '@common/utils/either';
 import {
   CommandCreateCategoryDto,
   OutputCategoryDto,
-} from '@modules/products/dtos/category.dto';
+} from '@modules/products/dtos/category/category.dto';
 import { Category } from '@modules/products/entities/categories.entity';
 import { CategoryRepositoryInterface } from '@modules/products/interfaces/category.repository';
 import { Inject, Injectable } from '@nestjs/common';
