@@ -42,3 +42,78 @@ model UserCode {
 
   @@map("userCode")
 }
+
+model Product {
+  id              String            @unique @default(uuid())
+  name            String            @unique
+  description     String
+  basePrice       Int
+  taxRate         Int
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now())
+  deletedAt       DateTime?
+  imageUrl        String?
+  ProductVariants ProductVariants[]
+  ProductCategory ProductCategory[]
+
+  @@map("products")
+}
+
+model ProductVariants {
+  id                       String                     @unique @default(uuid())
+  productId                String
+  product                  Product                    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku                      String                     @unique
+  price                    Int
+  promocionalPrice         Int
+  stockQuantity            Int
+  imageUrl                 String?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @default(now())
+  ProductVariantAttributes ProductVariantAttributes[]
+
+  @@map("productVariants")
+}
+
+model ProductAttributes {
+  id                       String                     @unique @default(uuid())
+  name                     String
+  ProductVariantAttributes ProductVariantAttributes[]
+
+  @@map("productAttributes")
+}
+
+model ProductVariantAttributes {
+  id                 String            @unique @default(uuid())
+  productVariantId   String
+  productVariant     ProductVariants   @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productAttributeId String
+  productAtrribute   ProductAttributes @relation(fields: [productAttributeId], references: [id], onDelete: Cascade)
+  value              String
+
+  @@map("productVariantAttributes")
+}
+
+model Category {
+  id               String            @unique @default(uuid())
+  name             String            @unique
+  parentCategoryId String?           @unique
+  category         Category?         @relation("ParentCategoryId", fields: [parentCategoryId], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now())
+  deletedAt        DateTime?
+  Category         Category[]        @relation("ParentCategoryId")
+  ProductCategory  ProductCategory[]
+
+  @@map("categories")
+}
+
+model ProductCategory {
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@map("productCategories")
+}

@@ -9,6 +9,7 @@ import { ConfigModule, ConfigType } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import redisConfig from '@config/redis.config';
 import { NotificationsModule } from '@modules/notifications/notifications.module';
+import { ProductsModel } from '@modules/products/products.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { NotificationsModule } from '@modules/notifications/notifications.module
     UserModule,
     LoggingModule,
     NotificationsModule,
+    ProductsModel,
     ConfigModule.forRoot(),
     BullModule.forRootAsync({
       imports: [ConfigModule.forRoot({ load: [redisConfig] })],
