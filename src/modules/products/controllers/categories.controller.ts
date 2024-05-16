@@ -20,7 +20,7 @@ import { Roles } from '@modules/auth/decorators/role.decorator';
 import { UserRole } from '@modules/auth/middlewares/roles.enum';
 import { AuthenticationGuard } from '@modules/auth/middlewares/authenticate.guard';
 import { RolesGuard } from '@modules/auth/middlewares/role.guard';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CommandUpdateCategoryDto } from '../dtos/category/update-category.dto';
 import { UpdateCategoryUseCase } from '../usecases/category/update-category.usecase';
 import { DeleteCategoryDto } from '../dtos/category/delete-category.dto';
@@ -33,6 +33,7 @@ import {
   SearchCategoriesDto,
 } from '../dtos/category/search-categories.dto';
 
+@ApiTags('categories')
 @Controller('categories')
 export class CategoryController {
   constructor(
@@ -162,7 +163,7 @@ export class CategoryController {
   })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  @Roles([UserRole.Admin, UserRole.Employer])
+  @Roles([UserRole.Admin, UserRole.Employer, UserRole.Client])
   @UseGuards(AuthenticationGuard, RolesGuard)
   async get(@Param() id: FindOneCategoryDto): Promise<OutputCategoryDto> {
     const response = await this.findOneCategoryUseCase.execute(id);
@@ -183,6 +184,17 @@ export class CategoryController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'search Categories for products.' })
+  @ApiBody({
+    type: SearchCategoriesDto,
+    description: 'command for delete Category.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'find Categories successfully.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer, UserRole.Client])
   async search(
     @Query() data: SearchCategoriesDto,
   ): Promise<OutputSearchCategoriesDto> {
