@@ -9,10 +9,11 @@ import { UpdateCategoryUseCase } from './usecases/category/update-category.useca
 import { DeleteCategoryUseCase } from './usecases/category/delete-category.usecase';
 import { FindOneCategoryUseCase } from './usecases/category/find-one-category.usecase';
 import { SearchCategoriesUseCase } from './usecases/category/search-categories.usecase';
+import { ProductsController } from './controllers/products.controller';
 
 @Module({
   imports: [LoggingModule, AuthModule],
-  controllers: [CategoryController],
+  controllers: [CategoryController, ProductsController],
   providers: [
     PrismaService,
     {

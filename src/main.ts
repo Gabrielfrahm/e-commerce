@@ -11,7 +11,7 @@ async function bootstrap(): Promise<void> {
     autoFlushLogs: true,
   });
   app.setGlobalPrefix('v1');
-  app.enableCors();
+  app.enableCors(); // Habilita CORS, se necessário
   // Middleware para logar a rota chamada
   app.use((req, res, next) => {
     res.on('finish', () => {

@@ -4,7 +4,10 @@ FROM node:20-alpine as build
 # Define o diretório de trabalho no container para a etapa de build
 WORKDIR /usr/src/app
 
+
 # Copia os arquivos do package.json e package-lock.json (ou yarn.lock)
+COPY .yarn ./.yarn
+COPY .yarnrc ./.yarnrc
 COPY package*.json ./
 COPY yarn.lock ./
 

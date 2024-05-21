@@ -10,6 +10,8 @@ import { BullModule } from '@nestjs/bull';
 import redisConfig from '@config/redis.config';
 import { NotificationsModule } from '@modules/notifications/notifications.module';
 import { ProductsModel } from '@modules/products/products.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -28,6 +30,11 @@ import { ProductsModel } from '@modules/products/products.module';
         },
       }),
       inject: [redisConfig.KEY],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads', // Define a rota para servir arquivos estáticos
+      exclude: ['/api*'], // Exclui a rota da API para evitar conflitos
     }),
   ],
   controllers: [AppController],
