@@ -16,7 +16,7 @@ export const multerConfig: MulterOptions = {
     },
   }),
   limits: {
-    fileSize: 1024,
+    fileSize: 1 * 1024 * 1024,
   },
   fileFilter: (_req, file, cb): unknown => {
     if (

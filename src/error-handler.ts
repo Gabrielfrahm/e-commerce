@@ -49,7 +49,7 @@ export class EitherExceptionFilter implements ExceptionFilter {
     };
 
     // Log the error
-    this.loggerService.error(`${responseBody.message}`, exception['stack']);
+    this.loggerService.error(`${exception['message']}`, exception['stack']);
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }

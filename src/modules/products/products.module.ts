@@ -10,6 +10,8 @@ import { DeleteCategoryUseCase } from './usecases/category/delete-category.useca
 import { FindOneCategoryUseCase } from './usecases/category/find-one-category.usecase';
 import { SearchCategoriesUseCase } from './usecases/category/search-categories.usecase';
 import { ProductsController } from './controllers/products.controller';
+import { CreateBaseProductUseCase } from './usecases/product/create-base-product.usecase';
+import { ProductRepository } from './repositories/product.repository';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -22,11 +24,18 @@ import { ProductsController } from './controllers/products.controller';
         new CategoryRepository(prismaService),
       inject: [PrismaService],
     },
+    {
+      provide: 'productRepository',
+      useFactory: (prismaService: PrismaService): ProductRepository =>
+        new ProductRepository(prismaService),
+      inject: [PrismaService],
+    },
     CreateCategoryUseCase,
     UpdateCategoryUseCase,
     DeleteCategoryUseCase,
     FindOneCategoryUseCase,
     SearchCategoriesUseCase,
+    CreateBaseProductUseCase,
   ],
   exports: ['categoryRepository'],
 })
