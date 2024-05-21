@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { CustomValidationPipe } from './class-validation.pipe';
 import { EitherExceptionFilter } from './error-handler';
 import { Logger } from '@nestjs/common';
+import { WinstonLoggerService } from '@modules/logger/logger.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
@@ -24,7 +25,9 @@ async function bootstrap(): Promise<void> {
 
   const httpAdapterHost = app.get(HttpAdapterHost);
 
-  app.useGlobalFilters(new EitherExceptionFilter(httpAdapterHost));
+  app.useGlobalFilters(
+    new EitherExceptionFilter(httpAdapterHost, new WinstonLoggerService()),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('e-commerce')

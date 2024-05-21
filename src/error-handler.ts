@@ -3,12 +3,18 @@ import {
   Catch,
   ArgumentsHost,
   HttpStatus,
+  Inject,
+  LoggerService,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
 @Catch()
 export class EitherExceptionFilter implements ExceptionFilter {
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+    @Inject('WinstonLoggerService')
+    private readonly loggerService: LoggerService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -41,11 +47,9 @@ export class EitherExceptionFilter implements ExceptionFilter {
             : exception.message
           : exception,
     };
+
     // Log the error
-    // this.logger.error(
-    //   `HTTP ${httpStatus} Error: ${error.body.message}`,
-    //   exception.stack,
-    // );
+    this.loggerService.error(`${responseBody.message}`, exception['stack']);
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }
