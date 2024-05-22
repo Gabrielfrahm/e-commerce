@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   Inject,
   LoggerService,
+  Param,
   Post,
   UploadedFiles,
   UseGuards,
@@ -13,7 +15,7 @@ import { Roles } from '@modules/auth/decorators/role.decorator';
 import { UserRole } from '@modules/auth/middlewares/roles.enum';
 import { AuthenticationGuard } from '@modules/auth/middlewares/authenticate.guard';
 import { RolesGuard } from '@modules/auth/middlewares/role.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
@@ -23,6 +25,8 @@ import {
   OutputProductDto,
 } from '../dtos/product/create-product.dto';
 import { CreateBaseProductUseCase } from '../usecases/product/create-base-product.usecase';
+import { FindOneBaseProduct } from '../dtos/product/find-one-base-product.dto';
+import { FindOneBaseProductUseCase } from '../usecases/product/find-one-base-product.usecase';
 
 @ApiTags('products')
 @Controller('products')
@@ -31,9 +35,22 @@ export class ProductsController {
     @Inject('WinstonLoggerService')
     private readonly loggerService: LoggerService,
     private readonly createBaseProductUseCase: CreateBaseProductUseCase,
+    private readonly findOneBaseProductUseCase: FindOneBaseProductUseCase,
   ) {}
 
   @Post('')
+  @ApiOperation({ summary: 'Create a base product products.' })
+  @ApiBody({
+    type: CreateProductDto,
+    description: 'command for create a new Base Product.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Create a new new Base Product successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'Category not found.' })
+  @ApiResponse({ status: 409, description: 'Base Product already exist.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
   @Roles([UserRole.Admin, UserRole.Employer])
   @UseGuards(AuthenticationGuard, RolesGuard)
   @UseInterceptors(
@@ -57,6 +74,36 @@ export class ProductsController {
     }
 
     this.loggerService.log(`create base product with name: ${data.name}`);
+    return response.value;
+  }
+
+  @Get(':id')
+  @Post('')
+  @ApiOperation({ summary: 'Find a base product products.' })
+  @ApiBody({
+    type: FindOneBaseProduct,
+    description: 'command for find  Base Product.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Find Base Product successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'Base Product not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async findOneBaseProductById(
+    @Param() data: FindOneBaseProduct,
+  ): Promise<OutputProductDto> {
+    const response = await this.findOneBaseProductUseCase.execute(data);
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try find base product with id : ${data.id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`find base product with id: ${data.id}`);
     return response.value;
   }
 }

@@ -12,6 +12,7 @@ import { SearchCategoriesUseCase } from './usecases/category/search-categories.u
 import { ProductsController } from './controllers/products.controller';
 import { CreateBaseProductUseCase } from './usecases/product/create-base-product.usecase';
 import { ProductRepository } from './repositories/product.repository';
+import { FindOneBaseProductUseCase } from './usecases/product/find-one-base-product.usecase';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -36,6 +37,7 @@ import { ProductRepository } from './repositories/product.repository';
     FindOneCategoryUseCase,
     SearchCategoriesUseCase,
     CreateBaseProductUseCase,
+    FindOneBaseProductUseCase,
   ],
   exports: ['categoryRepository'],
 })

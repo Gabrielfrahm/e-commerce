@@ -1,6 +1,7 @@
 import { BaseEntity, BaseEntityProps } from '@common/utils/base.entity';
 import { ProductsVariant } from './products-variant.entity';
 import { randomUUID } from 'crypto';
+import { Category } from './categories.entity';
 
 export interface ProductsProps extends BaseEntityProps {
   name: string;
@@ -8,6 +9,7 @@ export interface ProductsProps extends BaseEntityProps {
   basePrice: number;
   taxRate: number;
   imageUrl: string | null;
+  categories: Category[];
   variants?: ProductsVariant[];
 }
 
@@ -17,6 +19,7 @@ export class Products extends BaseEntity {
   private basePrice: ProductsProps['basePrice'];
   private taxRate: ProductsProps['taxRate'];
   private imageUrl: ProductsProps['imageUrl'];
+  private categories: ProductsProps['categories'];
   private variants: ProductsProps['variants'];
 
   constructor(data: ProductsProps) {
@@ -44,6 +47,7 @@ export class Products extends BaseEntity {
       imageUrl: data.imageUrl,
       name: data.name,
       taxRate: data.taxRate,
+      categories: data.categories,
       variants: data.variants,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -59,6 +63,7 @@ export class Products extends BaseEntity {
       imageUrl: this.imageUrl,
       name: this.name,
       taxRate: this.taxRate,
+      categories: this.categories.map((category) => category.serialize()),
       variants: this.variants.map((variant) => variant.serialize()),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -84,6 +89,10 @@ export class Products extends BaseEntity {
 
   getImageUrl(): string | null {
     return this.imageUrl;
+  }
+
+  getCategories(): Category[] {
+    return this.categories;
   }
 
   getVariants(): ProductsVariant[] {

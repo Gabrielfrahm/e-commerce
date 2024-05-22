@@ -47,8 +47,22 @@ export class CategoryRepository implements CategoryRepositoryInterface {
     }
   }
 
-  findByName(name: string): Promise<Either<Error, Category>> {
-    throw new Error('Method not implemented.');
+  async findByName(name: string): Promise<Either<Error, Category>> {
+    try {
+      const check = await this.model.findUnique({
+        where: {
+          name: name,
+        },
+      });
+
+      if (!check) {
+        return left(new RepositoryException(`Category not found ${name}`, 404));
+      }
+
+      return right(Category.createFrom(check));
+    } catch (e) {
+      return left(e);
+    }
   }
 
   async findById(id: string): Promise<Either<Error, Category>> {

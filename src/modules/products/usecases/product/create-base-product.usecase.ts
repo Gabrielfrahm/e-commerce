@@ -4,7 +4,9 @@ import {
   CreateProductDto,
   OutputProductDto,
 } from '@modules/products/dtos/product/create-product.dto';
+import { Category } from '@modules/products/entities/categories.entity';
 import { Products } from '@modules/products/entities/products.entity';
+import { CategoryRepositoryInterface } from '@modules/products/interfaces/category.repository';
 import { ProductRepositoryInterface } from '@modules/products/interfaces/product.repository';
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -15,13 +17,27 @@ export class CreateBaseProductUseCase
   constructor(
     @Inject('productRepository')
     private readonly productRepository: ProductRepositoryInterface,
+    @Inject('categoryRepository')
+    private readonly categoryRepository: CategoryRepositoryInterface,
   ) {}
 
   async execute(
     input: CreateProductDto,
   ): Promise<Either<Error, OutputProductDto>> {
+    const categoriesEntities: Category[] = [];
+    for (const categoryName of input.categories) {
+      const category = await this.categoryRepository.findByName(categoryName);
+
+      if (category.isLeft()) {
+        return left(category.value);
+      }
+
+      categoriesEntities.push(category.value);
+    }
+
     const productEntity = Products.CreateNew({
       ...input,
+      categories: categoriesEntities,
     });
 
     const product = await this.productRepository.create(productEntity);
@@ -37,6 +53,10 @@ export class CreateBaseProductUseCase
       imageUrl: product.value.getImageUrl(),
       name: product.value.getName(),
       taxRate: product.value.getTaxRate(),
+      categories: product.value.getCategories().map((category) => ({
+        id: category.getId(),
+        name: category.getName(),
+      })),
     });
   }
 }

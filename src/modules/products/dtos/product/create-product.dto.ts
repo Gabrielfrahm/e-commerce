@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -42,6 +49,14 @@ export class CreateProductDto {
     description: 'base image product',
   })
   imageUrl: string;
+
+  @ApiProperty({
+    example: '[informática]',
+    description: 'array of name categories',
+  })
+  @IsArray()
+  @ArrayNotEmpty()
+  categories: string[];
 }
 
 export class OutputProductDto {
@@ -89,6 +104,13 @@ export class OutputProductDto {
   })
   @IsNotEmpty()
   imageUrl: string;
+
+  @ApiProperty({
+    example: '{ id: string; name: string }',
+    description: 'array of name categories',
+  })
+  @IsNotEmpty()
+  categories: { id: string; name: string }[];
 
   variants?: [];
 }
