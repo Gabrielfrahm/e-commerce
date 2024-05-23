@@ -60,9 +60,10 @@ export class ProductsController {
     @UploadedFiles() files: { imageUrl: Express.Multer.File[] },
     @Body() data: CreateProductDto,
   ): Promise<OutputProductDto> {
+    console.log(files);
     const response = await this.createBaseProductUseCase.execute({
       ...data,
-      imageUrl: `${process.env.BASE_URL}/${files.imageUrl[0].path}`,
+      imageUrl: files.imageUrl[0].path,
     });
 
     if (response.isLeft()) {

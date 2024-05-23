@@ -1,3 +1,4 @@
+import { UploadFileInterface } from '@common/interfaces/upload-file.interface';
 import { BaseUseCase } from '@common/interfaces/usecases.interface';
 import { Either, left, right } from '@common/utils/either';
 import {
@@ -19,6 +20,8 @@ export class CreateBaseProductUseCase
     private readonly productRepository: ProductRepositoryInterface,
     @Inject('categoryRepository')
     private readonly categoryRepository: CategoryRepositoryInterface,
+    @Inject('uploadFileService')
+    private readonly uploadService: UploadFileInterface,
   ) {}
 
   async execute(
@@ -35,9 +38,16 @@ export class CreateBaseProductUseCase
       categoriesEntities.push(category.value);
     }
 
+    const uploadLink = await this.uploadService.uploadFile(input.imageUrl);
+
+    if (uploadLink.isLeft()) {
+      return left(uploadLink.value);
+    }
+
     const productEntity = Products.CreateNew({
       ...input,
       categories: categoriesEntities,
+      imageUrl: uploadLink.value,
     });
 
     const product = await this.productRepository.create(productEntity);

@@ -13,6 +13,8 @@ import { ProductsController } from './controllers/products.controller';
 import { CreateBaseProductUseCase } from './usecases/product/create-base-product.usecase';
 import { ProductRepository } from './repositories/product.repository';
 import { FindOneBaseProductUseCase } from './usecases/product/find-one-base-product.usecase';
+import { UploadFileInterface } from '@common/interfaces/upload-file.interface';
+import { FreeImageService } from '@common/services/freeImage.service';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -30,6 +32,10 @@ import { FindOneBaseProductUseCase } from './usecases/product/find-one-base-prod
       useFactory: (prismaService: PrismaService): ProductRepository =>
         new ProductRepository(prismaService),
       inject: [PrismaService],
+    },
+    {
+      provide: 'uploadFileService',
+      useFactory: (): UploadFileInterface => new FreeImageService(),
     },
     CreateCategoryUseCase,
     UpdateCategoryUseCase,
