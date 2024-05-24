@@ -5,6 +5,7 @@ import {
   Inject,
   LoggerService,
   Param,
+  Patch,
   Post,
   UploadedFiles,
   UseGuards,
@@ -27,6 +28,8 @@ import {
 import { CreateBaseProductUseCase } from '../usecases/product/create-base-product.usecase';
 import { FindOneBaseProduct } from '../dtos/product/find-one-base-product.dto';
 import { FindOneBaseProductUseCase } from '../usecases/product/find-one-base-product.usecase';
+import { UpdateBaseProductUseCase } from '../usecases/product/update-base-product.usecase';
+import { UpdateProductDto } from '../dtos/product/update-product.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -36,6 +39,7 @@ export class ProductsController {
     private readonly loggerService: LoggerService,
     private readonly createBaseProductUseCase: CreateBaseProductUseCase,
     private readonly findOneBaseProductUseCase: FindOneBaseProductUseCase,
+    private readonly updateBaseProductUseCase: UpdateBaseProductUseCase,
   ) {}
 
   @Post('')
@@ -105,6 +109,35 @@ export class ProductsController {
     }
 
     this.loggerService.log(`find base product with id: ${data.id}`);
+    return response.value;
+  }
+
+  @Patch(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'imageUrl', maxCount: 1 }], multerConfig),
+  )
+  async updateBaseProduct(
+    @Param('id') id: string,
+    @Body() data: Omit<UpdateProductDto, 'id'>,
+    @UploadedFiles() files?: { imageUrl: Express.Multer.File[] },
+  ): Promise<OutputProductDto> {
+    const response = await this.updateBaseProductUseCase.execute({
+      id,
+      ...data,
+      ...(files.imageUrl && {
+        imageUrl: files.imageUrl[0].path,
+      }),
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try update base product with id : ${id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`update base product with id: ${id}`);
     return response.value;
   }
 }

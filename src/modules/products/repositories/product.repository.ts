@@ -99,4 +99,90 @@ export class ProductRepository implements ProductRepositoryInterface {
       return left(e);
     }
   }
+
+  async update(entity: Products): Promise<Either<Error, Products>> {
+    try {
+      const product = await this.model.findUnique({
+        where: {
+          id: entity.getId(),
+        },
+      });
+
+      if (!product) {
+        return left(
+          new RepositoryException(
+            `product not found with id${entity.getId()}`,
+            404,
+          ),
+        );
+      }
+
+      const checkName = await this.model.findUnique({
+        where: {
+          name: entity.getName(),
+        },
+      });
+
+      if (checkName && checkName.id !== product.id) {
+        return left(
+          new RepositoryException(
+            `product with name ${entity.getName()} already exist`,
+            409,
+          ),
+        );
+      }
+
+      await this.model.update({
+        where: {
+          id: entity.getId(),
+        },
+        data: {
+          ProductCategory: {
+            deleteMany: {
+              productId: entity.getId(),
+            },
+          },
+        },
+      });
+
+      const updateProduct = await this.model.update({
+        where: {
+          id: entity.getId(),
+        },
+        data: {
+          id: entity.getId(),
+          basePrice: entity.getBasePrice(),
+          description: entity.getDescription(),
+          name: entity.getName(),
+          taxRate: entity.getTaxRate(),
+          imageUrl: entity.getImageUrl(),
+          updatedAt: entity.getUpdatedAt(),
+          ProductCategory: {
+            createMany: {
+              data: entity.getCategories().map((category) => ({
+                categoryId: category.getId(),
+              })),
+            },
+          },
+        },
+        include: {
+          ProductCategory: {
+            select: {
+              category: true,
+            },
+          },
+        },
+      });
+      return right(
+        Products.CreateFrom({
+          ...updateProduct,
+          categories: updateProduct.ProductCategory.map((productCategory) =>
+            Category.createFrom(productCategory.category),
+          ),
+        }),
+      );
+    } catch (e) {
+      return left(e);
+    }
+  }
 }

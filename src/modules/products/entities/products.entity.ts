@@ -71,6 +71,34 @@ export class Products extends BaseEntity {
     };
   }
 
+  Update(data: Partial<ProductsProps>): void {
+    if (data.name) {
+      this.name = data.name;
+    }
+
+    if (data.description) {
+      this.description = data.description;
+    }
+
+    if (data.basePrice) {
+      this.basePrice = Number(data.basePrice);
+    }
+
+    if (data.imageUrl) {
+      this.imageUrl = data.imageUrl;
+    }
+
+    if (data.taxRate) {
+      this.taxRate = Number(data.taxRate);
+    }
+
+    if (data.categories) {
+      this.categories = data.categories;
+    }
+
+    this.updatedAt = new Date();
+  }
+
   getBasePrice(): number {
     return this.basePrice;
   }
