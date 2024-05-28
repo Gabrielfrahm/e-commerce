@@ -16,6 +16,8 @@ import { FindOneBaseProductUseCase } from './usecases/product/find-one-base-prod
 import { UploadFileInterface } from '@common/interfaces/upload-file.interface';
 import { FreeImageService } from '@common/services/freeImage.service';
 import { UpdateBaseProductUseCase } from './usecases/product/update-base-product.usecase';
+import { DeleteBaseProductUseCase } from './usecases/product/delete-base-product.usecase';
+import { SearchBaseProductsUseCase } from './usecases/product/search-base-products.usecase';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -46,6 +48,8 @@ import { UpdateBaseProductUseCase } from './usecases/product/update-base-product
     CreateBaseProductUseCase,
     FindOneBaseProductUseCase,
     UpdateBaseProductUseCase,
+    DeleteBaseProductUseCase,
+    SearchBaseProductsUseCase,
   ],
   exports: ['categoryRepository'],
 })

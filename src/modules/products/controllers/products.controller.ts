@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   LoggerService,
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -30,6 +32,13 @@ import { FindOneBaseProduct } from '../dtos/product/find-one-base-product.dto';
 import { FindOneBaseProductUseCase } from '../usecases/product/find-one-base-product.usecase';
 import { UpdateBaseProductUseCase } from '../usecases/product/update-base-product.usecase';
 import { UpdateProductDto } from '../dtos/product/update-product.dto';
+import { DeleteBaseProductDto } from '../dtos/product/delete-product.dto';
+import { DeleteBaseProductUseCase } from '../usecases/product/delete-base-product.usecase';
+import {
+  OutputSearchProductsDto,
+  SearchProductsDto,
+} from '../dtos/product/search-product.dto';
+import { SearchBaseProductsUseCase } from '../usecases/product/search-base-products.usecase';
 
 @ApiTags('products')
 @Controller('products')
@@ -40,6 +49,8 @@ export class ProductsController {
     private readonly createBaseProductUseCase: CreateBaseProductUseCase,
     private readonly findOneBaseProductUseCase: FindOneBaseProductUseCase,
     private readonly updateBaseProductUseCase: UpdateBaseProductUseCase,
+    private readonly deleteBaseProductUseCase: DeleteBaseProductUseCase,
+    private readonly searchBaseProductsUseCase: SearchBaseProductsUseCase,
   ) {}
 
   @Post('')
@@ -116,6 +127,18 @@ export class ProductsController {
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'imageUrl', maxCount: 1 }], multerConfig),
   )
+  @ApiOperation({ summary: 'Update a base product products.' })
+  @ApiBody({
+    type: UpdateProductDto,
+    description: 'command for Update Base Product.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Update Base Product successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'Base Product not found.' })
+  @ApiResponse({ status: 409, description: 'Base Product name already exist.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
   async updateBaseProduct(
     @Param('id') id: string,
     @Body() data: Omit<UpdateProductDto, 'id'>,
@@ -138,6 +161,67 @@ export class ProductsController {
     }
 
     this.loggerService.log(`update base product with id: ${id}`);
+    return response.value;
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete  a base product products.' })
+  @ApiBody({
+    type: DeleteBaseProductDto,
+    description: 'command for Delete  Base Product.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Delete Base Product successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'Base Product not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async deleteBaseProduct(@Param('id') id: string): Promise<void> {
+    const response = await this.deleteBaseProductUseCase.execute({
+      id,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try Delete base product with id : ${id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`Delete base product with id: ${id}`);
+    return response.value;
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'search base Products.' })
+  @ApiBody({
+    type: SearchProductsDto,
+    description: 'command for search base products.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'search base Products successfully.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer, UserRole.Client])
+  async search(
+    @Query() data: SearchProductsDto,
+  ): Promise<OutputSearchProductsDto> {
+    const response = await this.searchBaseProductsUseCase.execute(data);
+
+    if (response.isLeft()) {
+      await this.loggerService.error(
+        `fail to search base products with params  ${JSON.stringify(data)}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    await this.loggerService.log(
+      `successfully to search base products with params ${JSON.stringify(data)} `,
+    );
+
     return response.value;
   }
 }

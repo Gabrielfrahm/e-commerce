@@ -5,12 +5,16 @@ import { Products } from '../entities/products.entity';
 import { RepositoryException } from '@common/exceptions/repository.exception';
 import { Category } from '../entities/categories.entity';
 import { Injectable } from '@nestjs/common';
+import { Search } from '@common/interfaces/search.interface';
+import { SearchProductsDto } from '../dtos/product/search-product.dto';
 
 @Injectable()
 export class ProductRepository implements ProductRepositoryInterface {
   private model: PrismaService['product'];
+  private connection: PrismaService;
   constructor(prismaService: PrismaService) {
     this.model = prismaService.product;
+    this.connection = prismaService;
   }
 
   async create(entity: Products): Promise<Either<Error, Products>> {
@@ -181,6 +185,134 @@ export class ProductRepository implements ProductRepositoryInterface {
           ),
         }),
       );
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async delete(id: string): Promise<Either<Error, void>> {
+    try {
+      const product = await this.model.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!product) {
+        return left(
+          new RepositoryException(`product not found with id ${id}`, 404),
+        );
+      }
+
+      await this.model.update({
+        where: { id },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      return right(null);
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async list({
+    page = 1,
+    perPage = 10,
+    name,
+    basePrice,
+    categoryName,
+    deletedAt,
+    description,
+    taxRate,
+    sort,
+    sortDir,
+  }: SearchProductsDto): Promise<Either<Error, Search<Products>>> {
+    const skip = (page - 1) * perPage;
+    const take = perPage;
+    const filters: any = {
+      deletedAt: null,
+      ...(deletedAt && {
+        deletedAt: {
+          not: null,
+        },
+      }),
+      ...(name && {
+        name: {
+          mode: 'insensitive',
+          contains: name,
+        },
+      }),
+      ...(description && {
+        description: {
+          mode: 'insensitive',
+          contains: description,
+        },
+      }),
+      ...(categoryName && {
+        ProductCategory: {
+          some: {
+            category: {
+              name: {
+                mode: 'insensitive',
+                contains: categoryName,
+              },
+            },
+          },
+        },
+      }),
+      ...(basePrice && {
+        basePrice: {
+          in: [basePrice],
+        },
+      }),
+      ...(taxRate && {
+        taxRate: {
+          in: [taxRate],
+        },
+      }),
+    };
+    try {
+      const [products, count] = await this.connection.$transaction([
+        this.model.findMany({
+          where: filters,
+          orderBy: {
+            [sort ?? 'createdAt']: sortDir ?? 'desc',
+          },
+          skip: skip,
+          take: take,
+          include: {
+            ProductCategory: {
+              select: {
+                category: true,
+              },
+            },
+          },
+        }),
+        this.model.count({
+          where: filters,
+        }),
+      ]);
+
+      const lastPage = Math.ceil(count / take);
+
+      return right({
+        data: products.map((product) =>
+          Products.CreateFrom({
+            ...product,
+            categories: product.ProductCategory.map((productCategory) =>
+              Category.createFrom(productCategory.category),
+            ),
+          }),
+        ),
+        meta: {
+          page: page,
+          perPage: take,
+          total: count,
+          lastPage: lastPage,
+        },
+      });
     } catch (e) {
       return left(e);
     }
