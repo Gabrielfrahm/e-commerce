@@ -35,6 +35,15 @@ export class UpdateVariantUseCase
 
     let uploadLink = variant.value.getImageUrl();
 
+    if (input.imageUrl) {
+      const newUploadLink = await this.uploadService.uploadFile(input.imageUrl);
+
+      if (newUploadLink.isLeft()) {
+        return left(newUploadLink.value);
+      }
+      uploadLink = newUploadLink.value;
+    }
+
     const attributes: ProductsAttributes[] = [];
     let variantAttributes: ProductsVariantAttributes[] =
       variant.value.getAttributes();
@@ -59,15 +68,6 @@ export class UpdateVariantUseCase
           value: JSON.parse(attribute.toString()).value,
         }),
       );
-    }
-
-    if (input.imageUrl) {
-      const newUploadLink = await this.uploadService.uploadFile(input.imageUrl);
-
-      if (newUploadLink.isLeft()) {
-        return left(newUploadLink.value);
-      }
-      uploadLink = newUploadLink.value;
     }
 
     variant.value.Update({
