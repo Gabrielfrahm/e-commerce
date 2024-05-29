@@ -39,6 +39,13 @@ import {
   SearchProductsDto,
 } from '../dtos/product/search-product.dto';
 import { SearchBaseProductsUseCase } from '../usecases/product/search-base-products.usecase';
+import {
+  CreateVariantDto,
+  OutputVariantDto,
+} from '../dtos/product/variant/create-variant.dto';
+import { CreateVariantUseCase } from '../usecases/product/variant/create-variant.usecase';
+import { UpdateVariantDto } from '../dtos/product/variant/update-variant.dto';
+import { UpdateVariantUseCase } from '../usecases/product/variant/update-variant.usecase';
 
 @ApiTags('products')
 @Controller('products')
@@ -51,6 +58,9 @@ export class ProductsController {
     private readonly updateBaseProductUseCase: UpdateBaseProductUseCase,
     private readonly deleteBaseProductUseCase: DeleteBaseProductUseCase,
     private readonly searchBaseProductsUseCase: SearchBaseProductsUseCase,
+
+    private readonly createVariantUseCase: CreateVariantUseCase,
+    private readonly updateVariantUseCase: UpdateVariantUseCase,
   ) {}
 
   @Post('')
@@ -106,6 +116,8 @@ export class ProductsController {
   })
   @ApiResponse({ status: 404, description: 'Base Product not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
   async findOneBaseProductById(
     @Param() data: FindOneBaseProduct,
   ): Promise<OutputProductDto> {
@@ -139,6 +151,8 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: 'Base Product not found.' })
   @ApiResponse({ status: 409, description: 'Base Product name already exist.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
   async updateBaseProduct(
     @Param('id') id: string,
     @Body() data: Omit<UpdateProductDto, 'id'>,
@@ -176,6 +190,8 @@ export class ProductsController {
   })
   @ApiResponse({ status: 404, description: 'Base Product not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
   async deleteBaseProduct(@Param('id') id: string): Promise<void> {
     const response = await this.deleteBaseProductUseCase.execute({
       id,
@@ -222,6 +238,92 @@ export class ProductsController {
       `successfully to search base products with params ${JSON.stringify(data)} `,
     );
 
+    return response.value;
+  }
+
+  @Post('variant')
+  @ApiOperation({ summary: 'create variant base product.' })
+  @ApiBody({
+    type: SearchProductsDto,
+    description: 'command for create variant base product.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'create variant base product successfully.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Variant already exist by use sku.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'imageUrl', maxCount: 1 }], multerConfig),
+  )
+  async createVariant(
+    @UploadedFiles() files: { imageUrl: Express.Multer.File[] },
+    @Body() data: CreateVariantDto,
+  ): Promise<OutputVariantDto> {
+    const response = await this.createVariantUseCase.execute({
+      ...data,
+      imageUrl: files.imageUrl[0].path,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try register variant with sku : ${data.sku}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`create variant with sku: ${data.sku}`);
+    return response.value;
+  }
+
+  @Patch('variant/:id')
+  @ApiOperation({ summary: 'update variant base product.' })
+  @ApiBody({
+    type: SearchProductsDto,
+    description: 'command for update variant base product.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'update variant base product successfully.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Variant already exist use id.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'imageUrl', maxCount: 1 }], multerConfig),
+  )
+  async updateVariant(
+    @Param('id') id: string,
+    @Body() data: Omit<UpdateVariantDto, 'id'>,
+    @UploadedFiles() files?: { imageUrl: Express.Multer.File[] },
+  ): Promise<OutputVariantDto> {
+    const response = await this.updateVariantUseCase.execute({
+      variantId: id,
+      ...data,
+      ...(files.imageUrl && {
+        imageUrl: files.imageUrl[0].path,
+      }),
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try update variant with id : ${id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`update variant with id : ${id}`);
     return response.value;
   }
 }

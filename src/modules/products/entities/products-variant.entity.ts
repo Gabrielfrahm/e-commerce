@@ -10,7 +10,7 @@ export interface ProductsVariantProps extends BaseEntityProps {
   promotionalPrice: number;
   stockQuantity: number;
   imageUrl: string | null;
-  attributes: ProductsVariantAttributes[];
+  attributes?: ProductsVariantAttributes[];
 }
 
 export class ProductsVariant extends BaseEntity {
@@ -74,6 +74,26 @@ export class ProductsVariant extends BaseEntity {
     };
   }
 
+  Update(data: Partial<ProductsVariantProps>): void {
+    if (data.price) {
+      this.price = Number(data.price);
+    }
+
+    if (data.promotionalPrice) {
+      this.promotionalPrice = Number(data.promotionalPrice);
+    }
+
+    if (data.imageUrl) {
+      this.imageUrl = data.imageUrl;
+    }
+
+    if (data.stockQuantity) {
+      this.stockQuantity = Number(data.stockQuantity);
+    }
+
+    this.updatedAt = new Date();
+  }
+
   getProduct(): Products {
     return this.product;
   }
@@ -94,11 +114,15 @@ export class ProductsVariant extends BaseEntity {
     return this.stockQuantity;
   }
 
-  get getImageUrl(): string | null {
+  getImageUrl(): string {
     return this.imageUrl;
   }
 
   getAttributes(): ProductsVariantAttributes[] {
     return this.attributes;
+  }
+
+  setAttributes(attributes: ProductsVariantAttributes[]): void {
+    this.attributes = attributes;
   }
 }

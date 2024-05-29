@@ -4,7 +4,7 @@ import { ProductsVariant } from './products-variant.entity';
 
 export interface ProductsVariantAttributesProps {
   id: string;
-  productVariant: ProductsVariant;
+  productVariant?: ProductsVariant;
   productAttribute: ProductsAttributes;
   value: string;
 }

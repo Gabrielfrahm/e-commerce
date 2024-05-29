@@ -18,6 +18,10 @@ import { FreeImageService } from '@common/services/freeImage.service';
 import { UpdateBaseProductUseCase } from './usecases/product/update-base-product.usecase';
 import { DeleteBaseProductUseCase } from './usecases/product/delete-base-product.usecase';
 import { SearchBaseProductsUseCase } from './usecases/product/search-base-products.usecase';
+import { CreateVariantUseCase } from './usecases/product/variant/create-variant.usecase';
+import { AttributesRepository } from './repositories/attributes.repository';
+import { VariantRepository } from './repositories/variant.repository';
+import { UpdateVariantUseCase } from './usecases/product/variant/update-variant.usecase';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -37,6 +41,18 @@ import { SearchBaseProductsUseCase } from './usecases/product/search-base-produc
       inject: [PrismaService],
     },
     {
+      provide: 'productAttributeRepository',
+      useFactory: (prismaService: PrismaService): AttributesRepository =>
+        new AttributesRepository(prismaService),
+      inject: [PrismaService],
+    },
+    {
+      provide: 'productVariantRepository',
+      useFactory: (prismaService: PrismaService): VariantRepository =>
+        new VariantRepository(prismaService),
+      inject: [PrismaService],
+    },
+    {
       provide: 'uploadFileService',
       useFactory: (): UploadFileInterface => new FreeImageService(),
     },
@@ -50,7 +66,14 @@ import { SearchBaseProductsUseCase } from './usecases/product/search-base-produc
     UpdateBaseProductUseCase,
     DeleteBaseProductUseCase,
     SearchBaseProductsUseCase,
+    CreateVariantUseCase,
+    UpdateVariantUseCase,
   ],
-  exports: ['categoryRepository'],
+  exports: [
+    'categoryRepository',
+    'productRepository',
+    'productAttributeRepository',
+    'productVariantRepository',
+  ],
 })
 export class ProductsModel {}
