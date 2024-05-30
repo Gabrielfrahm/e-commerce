@@ -8,6 +8,8 @@ import { Products } from '../entities/products.entity';
 import { Category } from '../entities/categories.entity';
 import { ProductsVariantAttributes } from '../entities/products-variant-attributes.entity';
 import { ProductsAttributes } from '../entities/products-attributes.entity';
+import { Search } from '@common/interfaces/search.interface';
+import { SearchVariantsDto } from '../dtos/product/variant/search-variant.dto';
 
 @Injectable()
 export class VariantRepository implements VariantRepositoryInterface {
@@ -247,6 +249,128 @@ export class VariantRepository implements VariantRepositoryInterface {
           ),
         }),
       );
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async delete(id: string): Promise<Either<Error, void>> {
+    try {
+      const variant = await this.model.findUnique({
+        where: { id },
+      });
+
+      if (!variant) {
+        return left(
+          new RepositoryException(`variant not found id: ${id}`, 404),
+        );
+      }
+
+      await this.model.delete({
+        where: {
+          id,
+        },
+      });
+
+      return right(null);
+    } catch (e) {
+      return left(e);
+    }
+  }
+
+  async list({
+    page = 1,
+    perPage = 10,
+    sort,
+    sortDir,
+    productId,
+    price,
+    sku,
+    promotionalPrice,
+  }: SearchVariantsDto): Promise<Either<Error, Search<ProductsVariant>>> {
+    const skip = (page - 1) * perPage;
+    const take = perPage;
+    try {
+      const filters: any = {
+        productId: productId,
+        ...(price && {
+          price: {
+            in: [price],
+          },
+        }),
+        ...(promotionalPrice && {
+          promocionalPrice: {
+            in: [promotionalPrice],
+          },
+        }),
+        ...(sku && {
+          sku: {
+            mode: 'insensitive',
+            contains: sku,
+          },
+        }),
+      };
+      const [variants, count] = await this.connection.$transaction([
+        this.model.findMany({
+          where: filters,
+          orderBy: {
+            [sort ?? 'createdAt']: sortDir ?? 'desc',
+          },
+          skip: skip,
+          take: take,
+          include: {
+            product: {
+              include: {
+                ProductCategory: {
+                  include: {
+                    category: true,
+                  },
+                },
+              },
+            },
+            ProductVariantAttributes: {
+              include: {
+                productAtrribute: true,
+              },
+            },
+          },
+        }),
+        this.model.count({
+          where: filters,
+        }),
+      ]);
+
+      const lastPage = Math.ceil(count / take);
+      return right({
+        data: variants.map((variant) =>
+          ProductsVariant.CreateFrom({
+            ...variant,
+            product: Products.CreateFrom({
+              ...variant.product,
+              categories: variant.product.ProductCategory.map(
+                (productCategory) =>
+                  Category.createFrom(productCategory.category),
+              ),
+            }),
+            promotionalPrice: variant.promocionalPrice,
+            attributes: variant.ProductVariantAttributes.map((att) =>
+              ProductsVariantAttributes.CreateFrom({
+                id: att.id,
+                productAttribute: ProductsAttributes.CreateFrom(
+                  att.productAtrribute,
+                ),
+                value: att.value,
+              }),
+            ),
+          }),
+        ),
+        meta: {
+          page: page,
+          perPage: take,
+          total: count,
+          lastPage: lastPage,
+        },
+      });
     } catch (e) {
       return left(e);
     }

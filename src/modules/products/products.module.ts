@@ -22,6 +22,9 @@ import { CreateVariantUseCase } from './usecases/product/variant/create-variant.
 import { AttributesRepository } from './repositories/attributes.repository';
 import { VariantRepository } from './repositories/variant.repository';
 import { UpdateVariantUseCase } from './usecases/product/variant/update-variant.usecase';
+import { FindOneVariantUseCase } from './usecases/product/variant/find-one-variant.usecase';
+import { DeleteVariantUseCase } from './usecases/product/variant/delete-variant.usecase';
+import { SearchVariantUseCase } from './usecases/product/variant/search-variant.usecase';
 
 @Module({
   imports: [LoggingModule, AuthModule],
@@ -68,6 +71,9 @@ import { UpdateVariantUseCase } from './usecases/product/variant/update-variant.
     SearchBaseProductsUseCase,
     CreateVariantUseCase,
     UpdateVariantUseCase,
+    FindOneVariantUseCase,
+    DeleteVariantUseCase,
+    SearchVariantUseCase,
   ],
   exports: [
     'categoryRepository',

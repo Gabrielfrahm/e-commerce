@@ -46,6 +46,11 @@ import {
 import { CreateVariantUseCase } from '../usecases/product/variant/create-variant.usecase';
 import { UpdateVariantDto } from '../dtos/product/variant/update-variant.dto';
 import { UpdateVariantUseCase } from '../usecases/product/variant/update-variant.usecase';
+import { FindOneVariantUseCase } from '../usecases/product/variant/find-one-variant.usecase';
+import { DeleteVariantUseCase } from '../usecases/product/variant/delete-variant.usecase';
+import { FindOneCategoryDto } from '../dtos/category/find-one-category.dto';
+import { SearchVariantUseCase } from '../usecases/product/variant/search-variant.usecase';
+import { OutputSearchVariantsDto } from '../dtos/product/variant/search-variant.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -61,6 +66,9 @@ export class ProductsController {
 
     private readonly createVariantUseCase: CreateVariantUseCase,
     private readonly updateVariantUseCase: UpdateVariantUseCase,
+    private readonly findOneVariantUseCase: FindOneVariantUseCase,
+    private readonly deleteVariantUseCase: DeleteVariantUseCase,
+    private readonly searchVariantUseCase: SearchVariantUseCase,
   ) {}
 
   @Post('')
@@ -244,7 +252,7 @@ export class ProductsController {
   @Post('variant')
   @ApiOperation({ summary: 'create variant base product.' })
   @ApiBody({
-    type: SearchProductsDto,
+    type: CreateVariantDto,
     description: 'command for create variant base product.',
   })
   @ApiResponse({
@@ -285,7 +293,7 @@ export class ProductsController {
   @Patch('variant/:id')
   @ApiOperation({ summary: 'update variant base product.' })
   @ApiBody({
-    type: SearchProductsDto,
+    type: UpdateVariantDto,
     description: 'command for update variant base product.',
   })
   @ApiResponse({
@@ -324,6 +332,94 @@ export class ProductsController {
     }
 
     this.loggerService.log(`update variant with id : ${id}`);
+    return response.value;
+  }
+
+  @Get('variant/:id')
+  @ApiOperation({ summary: 'Find variant base product.' })
+  @ApiBody({
+    type: FindOneCategoryDto,
+    description: 'command for Find variant base product.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Find variant base product successfully.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Variant already exist use id.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  async findOneVarian(@Param('id') id: string): Promise<OutputVariantDto> {
+    const response = await this.findOneVariantUseCase.execute({
+      id,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try find variant with id : ${id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`find variant with id : ${id}`);
+    return response.value;
+  }
+
+  @Delete('variant/:id')
+  async deleteVariant(@Param('id') id: string): Promise<void> {
+    const response = await this.deleteVariantUseCase.execute({
+      id,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try delete variant with id : ${id}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`delete variant with id : ${id}`);
+    return response.value;
+  }
+
+  @Get('search-variant/:productId')
+  @ApiOperation({ summary: 'search variants Products.' })
+  @ApiBody({
+    type: SearchProductsDto,
+    description: 'command for search variants products.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'search variants Products successfully.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @Roles([UserRole.Admin, UserRole.Employer])
+  async searchVariants(
+    @Query() data: SearchProductsDto,
+    @Param('productId') productId: string,
+  ): Promise<OutputSearchVariantsDto> {
+    const response = await this.searchVariantUseCase.execute({
+      productId: productId,
+      ...data,
+    });
+
+    if (response.isLeft()) {
+      await this.loggerService.error(
+        `fail to search variants products with params  ${JSON.stringify(data)}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    await this.loggerService.log(
+      `successfully to search variants products with params ${JSON.stringify(data)} `,
+    );
+
     return response.value;
   }
 }
