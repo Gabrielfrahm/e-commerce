@@ -19,6 +19,7 @@ model User {
   deletedAt DateTime?
   UserToken UserToken[]
   UserCode  UserCode[]
+  Cart      Cart[]
 
   @@map("users")
 }
@@ -71,6 +72,7 @@ model ProductVariants {
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime                   @default(now())
   ProductVariantAttributes ProductVariantAttributes[]
+  Cart                     Cart[]
 
   @@map("productVariants")
 }
@@ -116,4 +118,16 @@ model ProductCategory {
 
   @@id([productId, categoryId])
   @@map("productCategories")
+}
+
+model Cart {
+  productVariantId String
+  productVariant   ProductVariants @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  quantity         Int
+  userId           String
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime        @default(now())
+
+  @@id([productVariantId, userId])
+  @@map("carts")
 }

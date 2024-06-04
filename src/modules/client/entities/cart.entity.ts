@@ -53,8 +53,8 @@ export class Cart extends BaseEntity {
     };
   }
 
-  getTotal(cart: Cart): number {
-    return cart.items.reduce(
+  getTotal(): number {
+    return this.items.reduce(
       (acc, item) => acc + item.item.getPrice() * item.quantity,
       0,
     );
@@ -66,5 +66,9 @@ export class Cart extends BaseEntity {
 
   addItem(data: { item: ProductsVariant; quantity: number }): void {
     this.items.push(data);
+  }
+
+  getItems(): { item: ProductsVariant; quantity: number }[] {
+    return this.items;
   }
 }

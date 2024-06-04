@@ -1,10 +1,13 @@
 import {
+  Body,
   Controller,
   Get,
   Inject,
   LoggerService,
   Param,
+  Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SearchClientProductUseCase } from '../usecases/product/search-client-products.usecase';
@@ -16,6 +19,19 @@ import {
 import { FindOneCategoryDto } from '@modules/products/dtos/category/find-one-category.dto';
 import { OutputVariantDto } from '@modules/products/dtos/product/variant/create-variant.dto';
 import { FindOneClientProductUseCase } from '../usecases/product/find-one-product.usecase';
+import { AddProductCartUseCase } from '../usecases/cart/add-product-cart.usecase';
+import { AddProductCartDto } from '../dtos/add-product-cart.dto';
+import { AuthenticationGuard } from '@modules/auth/middlewares/authenticate.guard';
+import { RolesGuard } from '@modules/auth/middlewares/role.guard';
+import { UserRole } from '@modules/auth/middlewares/roles.enum';
+import { Roles } from '@modules/auth/decorators/role.decorator';
+import { RemoveProductCartDto } from '../dtos/remove-product-cart.dto';
+import { RemoveProductCartUseCase } from '../usecases/cart/remove-product-cart.usecase';
+import {
+  GetProductCartDto,
+  OutputProductCartDto,
+} from '../dtos/get-product-cart.dto';
+import { GetProductCartUseCase } from '../usecases/cart/get-product-cart.usecase';
 
 @Controller('client')
 @ApiTags('client')
@@ -23,6 +39,10 @@ export class ClientController {
   constructor(
     private readonly searchClientProductUseCase: SearchClientProductUseCase,
     private readonly findOneClientProductUseCase: FindOneClientProductUseCase,
+
+    private readonly addProductCartUseCase: AddProductCartUseCase,
+    private readonly removeProductCartUseCase: RemoveProductCartUseCase,
+    private readonly getProductCartUseCase: GetProductCartUseCase,
 
     @Inject('WinstonLoggerService')
     private readonly loggerService: LoggerService,
@@ -84,6 +104,80 @@ export class ClientController {
     }
 
     this.loggerService.log(`find product with id : ${id}`);
+    return response.value;
+  }
+
+  @Post('/cart')
+  @Roles([UserRole.Client])
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  @ApiOperation({ summary: 'add product in cart.' })
+  @ApiBody({
+    type: AddProductCartDto,
+    description: 'command for add product.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'add product successfully.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async addProductCart(@Body() data: AddProductCartDto): Promise<string> {
+    const response = await this.addProductCartUseCase.execute(data);
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try add product in cart user id : ${data.clientId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`add product in cart user id : ${data.clientId}`);
+    return response.value;
+  }
+
+  @Post('/cart/remove')
+  @Roles([UserRole.Client])
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  @ApiOperation({ summary: 'remove product in cart.' })
+  @ApiBody({
+    type: RemoveProductCartDto,
+    description: 'command for remove product.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'remove product successfully.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async removeProductCart(@Body() data: RemoveProductCartDto): Promise<string> {
+    const response = await this.removeProductCartUseCase.execute(data);
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try remove product in cart user id : ${data.clientId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`remove product in cart user id : ${data.clientId}`);
+    return response.value;
+  }
+
+  @Get('cart/:clientId')
+  async getCartClient(
+    @Param() data: GetProductCartDto,
+  ): Promise<OutputProductCartDto> {
+    const response = await this.getProductCartUseCase.execute(data);
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try get cart user id : ${data.clientId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`get cart user id : ${data.clientId}`);
     return response.value;
   }
 }
