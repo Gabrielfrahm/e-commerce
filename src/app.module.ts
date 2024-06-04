@@ -12,6 +12,7 @@ import { NotificationsModule } from '@modules/notifications/notifications.module
 import { ProductsModel } from '@modules/products/products.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ClientModulo } from '@modules/client/client.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     LoggingModule,
     NotificationsModule,
     ProductsModel,
+    ClientModulo,
     ConfigModule.forRoot(),
     BullModule.forRootAsync({
       imports: [ConfigModule.forRoot({ load: [redisConfig] })],
