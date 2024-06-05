@@ -6,9 +6,15 @@ import { Either, left, right } from '@common/utils/either';
 import axios from 'axios';
 import { ServiceException } from '@common/exceptions/service.exception';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@config/service/config.service';
 
 @Injectable()
 export class FreeImageService implements UploadFileInterface {
+  private readonly fileConfig: { url?: string; key?: string };
+  constructor(private readonly config: ConfigService) {
+    this.fileConfig = config.get('fileupload');
+  }
+
   async uploadFile(filePath: string): Promise<Either<Error, string>> {
     const formData = new FormData();
 
@@ -17,18 +23,14 @@ export class FreeImageService implements UploadFileInterface {
     formData.append('source', fileStream);
 
     try {
-      const response = await axios.post(
-        `${process.env.FILE_UPLOAD_URL}`,
-        formData,
-        {
-          headers: {
-            ...formData.getHeaders(),
-          },
-          params: {
-            key: `${process.env.FILE_UPLOAD_KEY}`,
-          },
+      const response = await axios.post(`${this.fileConfig.url}`, formData, {
+        headers: {
+          ...formData.getHeaders(),
         },
-      );
+        params: {
+          key: `${this.fileConfig.key}`,
+        },
+      });
 
       const data = await response.data;
 

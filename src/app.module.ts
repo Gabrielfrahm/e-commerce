@@ -5,14 +5,16 @@ import { PrismaService } from './modules/database/prisma/prisma.service';
 import { AuthModule } from '@modules/auth/auth.module';
 import { UserModule } from '@modules/users/user.module';
 import { LoggingModule } from '@modules/logger/logger.module';
-import { ConfigModule, ConfigType } from '@nestjs/config';
+
 import { BullModule } from '@nestjs/bull';
-import redisConfig from '@config/redis.config';
 import { NotificationsModule } from '@modules/notifications/notifications.module';
 import { ProductsModel } from '@modules/products/products.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ClientModulo } from '@modules/client/client.module';
+import { ConfigModule } from '@config/config.module';
+
+import { ConfigService } from '@config/service/config.service';
 
 @Module({
   imports: [
@@ -22,16 +24,21 @@ import { ClientModulo } from '@modules/client/client.module';
     NotificationsModule,
     ProductsModel,
     ClientModulo,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     BullModule.forRootAsync({
-      imports: [ConfigModule.forRoot({ load: [redisConfig] })],
-      useFactory: (configDatabase: ConfigType<typeof redisConfig>) => ({
-        redis: {
-          port: configDatabase.port,
-          host: configDatabase.host,
-        },
-      }),
-      inject: [redisConfig.KEY],
+      imports: [ConfigModule.forRoot()],
+      useFactory: async (configService: ConfigService) => {
+        const redisConfig = configService.get('redis');
+        return {
+          redis: {
+            host: redisConfig.host,
+            port: redisConfig.port,
+          },
+        };
+      },
+      inject: [ConfigService],
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),

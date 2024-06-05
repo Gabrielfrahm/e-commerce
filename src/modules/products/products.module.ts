@@ -25,11 +25,13 @@ import { UpdateVariantUseCase } from './usecases/product/variant/update-variant.
 import { FindOneVariantUseCase } from './usecases/product/variant/find-one-variant.usecase';
 import { DeleteVariantUseCase } from './usecases/product/variant/delete-variant.usecase';
 import { SearchVariantUseCase } from './usecases/product/variant/search-variant.usecase';
+import { ConfigService } from '@config/service/config.service';
 
 @Module({
   imports: [LoggingModule, AuthModule],
   controllers: [CategoryController, ProductsController],
   providers: [
+    ConfigService,
     PrismaService,
     {
       provide: 'categoryRepository',
@@ -57,7 +59,9 @@ import { SearchVariantUseCase } from './usecases/product/variant/search-variant.
     },
     {
       provide: 'uploadFileService',
-      useFactory: (): UploadFileInterface => new FreeImageService(),
+      useFactory: (configService: ConfigService): UploadFileInterface =>
+        new FreeImageService(configService),
+      inject: [ConfigService],
     },
     CreateCategoryUseCase,
     UpdateCategoryUseCase,
