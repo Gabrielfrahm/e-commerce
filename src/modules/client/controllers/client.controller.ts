@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   LoggerService,
@@ -32,6 +33,13 @@ import {
   OutputProductCartDto,
 } from '../dtos/get-product-cart.dto';
 import { GetProductCartUseCase } from '../usecases/cart/get-product-cart.usecase';
+import { CardDto, CardOutputDto } from '../dtos/card/card.dto';
+import { CreateCardUseCase } from '../usecases/card/create-card.usecase';
+import { DeleteCardDto } from '../dtos/card/deleteCard.dto';
+import { DeleteCardUseCase } from '../usecases/card/delete-card.usecase';
+import { GetAllCardUseCase } from '../usecases/card/get-all-cards.usecase';
+import { FindCardUseCase } from '../usecases/card/find-one-card.usecase';
+import { FindOneCardOutputDto } from '../dtos/card/find-one-card.dto';
 
 @Controller('client')
 @ApiTags('client')
@@ -43,6 +51,11 @@ export class ClientController {
     private readonly addProductCartUseCase: AddProductCartUseCase,
     private readonly removeProductCartUseCase: RemoveProductCartUseCase,
     private readonly getProductCartUseCase: GetProductCartUseCase,
+
+    private readonly createCardUseCase: CreateCardUseCase,
+    private readonly deleteCardUseCase: DeleteCardUseCase,
+    private readonly getAllCardUseCase: GetAllCardUseCase,
+    private readonly findCardUseCase: FindCardUseCase,
 
     @Inject('WinstonLoggerService')
     private readonly loggerService: LoggerService,
@@ -178,6 +191,79 @@ export class ClientController {
     }
 
     this.loggerService.log(`get cart user id : ${data.clientId}`);
+    return response.value;
+  }
+
+  @Post('card')
+  async createCard(@Body() data: CardDto): Promise<CardOutputDto> {
+    const response = await this.createCardUseCase.execute({
+      ...data,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try create card user id : ${data.userId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`get card user id : ${data.userId}`);
+    return response.value;
+  }
+
+  @Delete('card/:cardId')
+  async DeleteCard(@Param() data: DeleteCardDto): Promise<void> {
+    const response = await this.deleteCardUseCase.execute({
+      cardId: data.cardId,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try delete card id : ${data.cardId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`delete card id : ${data.cardId}`);
+    return response.value;
+  }
+
+  @Get('card/:userId')
+  async getAllCard(@Param('userId') userId: string): Promise<CardDto[]> {
+    const response = await this.getAllCardUseCase.execute(userId);
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try get all card id : ${userId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`get card id : ${userId}`);
+    return response.value;
+  }
+
+  @Get('card/find/:cardId')
+  async findOneCard(
+    @Param('userId') cardId: string,
+  ): Promise<FindOneCardOutputDto> {
+    const response = await this.findCardUseCase.execute({
+      cardId: cardId,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try find one card id : ${cardId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`get find one card id : ${cardId}`);
+
     return response.value;
   }
 }

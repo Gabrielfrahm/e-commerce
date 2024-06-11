@@ -20,6 +20,7 @@ model User {
   UserToken UserToken[]
   UserCode  UserCode[]
   Cart      Cart[]
+  Card      Card[]
 
   @@map("users")
 }
@@ -130,4 +131,18 @@ model Cart {
 
   @@id([productVariantId, userId])
   @@map("carts")
+}
+
+model Card {
+  id             String @unique @default(uuid())
+  userId         String
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  number         String
+  cardHolderName String
+  year           Int
+  month          Int
+  code           String
+
+  @@map("cards")
 }
