@@ -128,4 +128,39 @@ export class CardRepository implements CardRepositoryInterface {
       return left(e);
     }
   }
+
+  async update(entity: Card): Promise<Either<Error, Card>> {
+    try {
+      const card = await this.model.update({
+        where: {
+          id: entity.getId(),
+        },
+        data: {
+          cardHolderName: entity.getCardHolderName(),
+          code: entity.getCode(),
+          month: entity.getMonth(),
+          number: entity.getNumber(),
+          title: entity.getTitle(),
+          year: entity.getYear(),
+        },
+      });
+
+      return right(
+        Card.CreateFrom({
+          id: card.id,
+          cardHolderName: card.cardHolderName,
+          code: card.code,
+          month: card.month,
+          number: card.number,
+          title: card.title,
+          year: card.year,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          deletedAt: new Date(),
+        }),
+      );
+    } catch (e) {
+      return left(e);
+    }
+  }
 }

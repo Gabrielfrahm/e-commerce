@@ -54,6 +54,9 @@ export class CardDto {
 
 export class CardOutputDto {
   @IsUUID(4)
+  id: string;
+
+  @IsUUID(4)
   @IsNotEmpty()
   @ApiProperty({
     description: 'uuid',

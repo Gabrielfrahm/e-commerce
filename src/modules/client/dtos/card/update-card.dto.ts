@@ -1,52 +1,52 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
-export class FindOneCardDto {
+export class UpdateCardDto {
   @IsUUID(4)
-  cardId: string;
-}
-
-export class FindOneCardOutputDto {
+  @ApiProperty({
+    description: 'uuid card',
+  })
   id: string;
+
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'main card',
   })
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'number of card',
   })
-  number: string;
+  @IsOptional()
+  number?: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'card holder name',
   })
-  cardHolderName: string;
+  @IsOptional()
+  cardHolderName?: string;
 
   @IsNumber()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'year of card',
   })
-  year: number;
+  @IsOptional()
+  year?: number;
 
   @IsNumber()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'month of card',
   })
-  month: number;
+  @IsOptional()
+  month?: number;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'code of verification card',
   })
-  code: string;
+  @IsOptional()
+  code?: string;
 }

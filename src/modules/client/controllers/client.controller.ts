@@ -6,6 +6,7 @@ import {
   Inject,
   LoggerService,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -40,6 +41,8 @@ import { DeleteCardUseCase } from '../usecases/card/delete-card.usecase';
 import { GetAllCardUseCase } from '../usecases/card/get-all-cards.usecase';
 import { FindCardUseCase } from '../usecases/card/find-one-card.usecase';
 import { FindOneCardOutputDto } from '../dtos/card/find-one-card.dto';
+import { UpdateCardUseCase } from '../usecases/card/update-card.usecase';
+import { UpdateCardDto } from '../dtos/card/update-card.dto';
 
 @Controller('client')
 @ApiTags('client')
@@ -56,6 +59,7 @@ export class ClientController {
     private readonly deleteCardUseCase: DeleteCardUseCase,
     private readonly getAllCardUseCase: GetAllCardUseCase,
     private readonly findCardUseCase: FindCardUseCase,
+    private readonly updateCardUseCase: UpdateCardUseCase,
 
     @Inject('WinstonLoggerService')
     private readonly loggerService: LoggerService,
@@ -177,6 +181,7 @@ export class ClientController {
   }
 
   @Get('cart/:clientId')
+  @Roles([UserRole.Client])
   async getCartClient(
     @Param() data: GetProductCartDto,
   ): Promise<OutputProductCartDto> {
@@ -195,6 +200,7 @@ export class ClientController {
   }
 
   @Post('card')
+  @Roles([UserRole.Client])
   async createCard(@Body() data: CardDto): Promise<CardOutputDto> {
     const response = await this.createCardUseCase.execute({
       ...data,
@@ -213,6 +219,7 @@ export class ClientController {
   }
 
   @Delete('card/:cardId')
+  @Roles([UserRole.Client])
   async DeleteCard(@Param() data: DeleteCardDto): Promise<void> {
     const response = await this.deleteCardUseCase.execute({
       cardId: data.cardId,
@@ -231,6 +238,7 @@ export class ClientController {
   }
 
   @Get('card/:userId')
+  @Roles([UserRole.Client])
   async getAllCard(@Param('userId') userId: string): Promise<CardDto[]> {
     const response = await this.getAllCardUseCase.execute(userId);
 
@@ -247,8 +255,9 @@ export class ClientController {
   }
 
   @Get('card/find/:cardId')
+  @Roles([UserRole.Client])
   async findOneCard(
-    @Param('userId') cardId: string,
+    @Param('cardId') cardId: string,
   ): Promise<FindOneCardOutputDto> {
     const response = await this.findCardUseCase.execute({
       cardId: cardId,
@@ -263,6 +272,30 @@ export class ClientController {
     }
 
     this.loggerService.log(`get find one card id : ${cardId}`);
+
+    return response.value;
+  }
+
+  @Patch('card/:cardId')
+  @Roles([UserRole.Client])
+  async updateCard(
+    @Param('cardId') cardId: string,
+    @Body() data: Omit<UpdateCardDto, 'id'>,
+  ): Promise<FindOneCardOutputDto> {
+    const response = await this.updateCardUseCase.execute({
+      ...data,
+      id: cardId,
+    });
+
+    if (response.isLeft()) {
+      this.loggerService.error(
+        `Erro when try update card id : ${cardId}`,
+        response.value.stack,
+      );
+      throw response.value;
+    }
+
+    this.loggerService.log(`get update card id : ${cardId}`);
 
     return response.value;
   }

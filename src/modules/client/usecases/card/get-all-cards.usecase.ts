@@ -23,6 +23,7 @@ export class GetAllCardUseCase
     return right(
       cards.value.map((card) => ({
         userId: input,
+        id: card.getId(),
         cardHolderName: card.getCardHolderName(),
         code: card.getCode(),
         month: card.getMonth(),

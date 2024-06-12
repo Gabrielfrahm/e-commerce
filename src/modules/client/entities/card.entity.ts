@@ -65,6 +65,34 @@ export class Card extends BaseEntity {
     };
   }
 
+  update(data: Partial<CardProps>): void {
+    if (data.cardHolderName) {
+      this.cardHolderName = data.cardHolderName;
+    }
+
+    if (data.code) {
+      this.code = data.code;
+    }
+
+    if (data.month) {
+      this.month = data.month;
+    }
+
+    if (data.year) {
+      this.year = data.year;
+    }
+
+    if (data.number) {
+      this.number = data.number;
+    }
+
+    if (data.title) {
+      this.title = data.title;
+    }
+
+    this.updatedAt = new Date();
+  }
+
   public getTitle(): string {
     return this.title;
   }

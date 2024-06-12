@@ -15,6 +15,7 @@ import { CreateCardUseCase } from './usecases/card/create-card.usecase';
 import { DeleteCardUseCase } from './usecases/card/delete-card.usecase';
 import { GetAllCardUseCase } from './usecases/card/get-all-cards.usecase';
 import { FindCardUseCase } from './usecases/card/find-one-card.usecase';
+import { UpdateCardUseCase } from './usecases/card/update-card.usecase';
 
 @Module({
   imports: [LoggingModule, ProductsModel, AuthModule],
@@ -42,7 +43,8 @@ import { FindCardUseCase } from './usecases/card/find-one-card.usecase';
     DeleteCardUseCase,
     GetAllCardUseCase,
     FindCardUseCase,
+    UpdateCardUseCase,
   ],
-  exports: ['cartRepository'],
+  exports: ['cartRepository', 'cardRepository'],
 })
 export class ClientModulo {}

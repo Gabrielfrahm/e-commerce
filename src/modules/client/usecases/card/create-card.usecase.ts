@@ -32,6 +32,7 @@ export class CreateCardUseCase
 
     return right({
       userId: input.userId,
+      id: card.value.getId(),
       cardHolderName: card.value.getCardHolderName(),
       code: card.value.getCode(),
       month: card.value.getMonth(),
